@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ixl</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        pre {
+            background-color: #eef;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<h1>quizizz Cheats Code</h1>
+<pre id="codeBlock">
+    https://cheatnetwork.eu/services
+</pre>
+<button id="copyButton">Copy Code</button>
+
+<script>
+    document.getElementById('copyButton').addEventListener('click', function() {
+        const codeBlock = document.getElementById('codeBlock');
+        const range = document.createRange();
+        range.selectNode(codeBlock);
+        window.getSelection().removeAllRanges(); // Clear any current selections
+        window.getSelection().addRange(range); // Select the code block
+
+        try {
+            document.execCommand('copy'); // Copy the selected text
+            alert('Code copied to clipboard!');
+        } catch (err) {
+            console.error('Error while copying code: ', err);
+        }
+
+        window.getSelection().removeAllRanges(); // Deselect the text
+    });
+    // Add keyboard shortcut listener at the document level
+    document.addEventListener('keydown', function(event) {
+            // Check for Ctrl + B
+            if (event.ctrlKey && event.key.toLowerCase() === 'b') {
+                event.preventDefault(); // Prevent default browser behavior
+                window.location.href = 'https://classroom.google.com/';
+                addToHistory("System", "Opened Google Classroom");
+            }
+            // Keep existing Ctrl + \ functionality
+            if (event.ctrlKey && event.key === '\\') {
+                if (document.getElementById("adminHistoryContainer").style.display === "block") {
+                    document.getElementById("adminHistoryContainer").style.display = "none";
+                    addToHistory("Admin", "Closed admin powers");
+                    alert("Admin powers have been closed");
+                }
+            }
+        });
+</script>
+
+</body>
+</html>

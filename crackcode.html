@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ixl</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        .logo {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .logo img {
+            height: 50px;
+            width: auto;
+            filter: drop-shadow(0 0 8px #00ff41);
+            transition: all 0.3s ease;
+        }
+        
+        .logo img:hover {
+            filter: drop-shadow(0 0 15px #00ff41) brightness(1.2);
+            transform: scale(1.05);
+        }
+        
+        body {
+            background: linear-gradient(135deg, #181818 60%, #003300 100%);
+            color: #00ff41;
+            font-family: 'Fira Mono', 'Consolas', 'Courier New', monospace;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-top: 70px;
+        }
+        .matrix-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .crack-container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            animation: fadeInScale 1.2s cubic-bezier(.68,-0.55,.27,1.55) forwards;
+        }
+        @keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.7) rotateX(40deg);}
+            80% { opacity: 1; transform: scale(1.05) rotateX(-10deg);}
+            100% { opacity: 1; transform: scale(1) rotateX(0);}
+        }
+        .crack-title {
+            font-size: 2.7em;
+            letter-spacing: 2px;
+            text-shadow: 0 0 12px #00ff41, 0 0 24px #003300;
+            margin-bottom: 24px;
+            font-weight: bold;
+        }
+        .crack-desc {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #00ff41;
+            text-shadow: 0 0 8px #003300;
+        }
+        .input-label {
+            font-size: 1.1em;
+            margin-bottom: 6px;
+            color: #00ff41;
+        }
+        .input-field {
+            background:#181818; color:#00ff41; border:2px solid #00ff41; border-radius:4px; padding:10px; font-size:1.1em; margin-bottom:16px; font-family:inherit; width:260px;
+        }
+        .back-btn {
+            background: #181818;
+            color: #00ff41;
+            border: 2px solid #00ff41;
+            border-radius: 50%;
+            padding: 12px 16px;
+            font-size: 1.5em;
+            cursor: pointer;
+            box-shadow: 0 0 12px #00ff4133;
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 2;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+        .back-btn:hover {
+            background: #00ff41;
+            color: #181818;
+            box-shadow: 0 0 24px #00ff41;
+        }
+        .btn {
+            background:#181818; 
+            color:#00ff41; 
+            border:2px solid #00ff41; 
+            border-radius:4px; 
+            padding:8px 18px; 
+            font-size:1em; 
+            cursor:pointer; 
+            font-family:inherit; 
+            margin-bottom:10px;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            background: #00ff41;
+            color: #181818;
+            box-shadow: 0 0 12px #00ff41;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        #codeResult {
+            margin-top:18px; 
+            font-size:1.1em;
+            text-align: center;
+            padding: 10px;
+            border-radius: 4px;
+            min-height: 20px;
+        }
+        .error {
+            color: #ff4141 !important;
+            text-shadow: 0 0 8px #ff414133;
+        }
+        .success {
+            color: #00ff41 !important;
+            text-shadow: 0 0 8px #00ff4133;
+        }
+        .warning {
+            color: #ffff41 !important;
+            text-shadow: 0 0 8px #ffff4133;
+        }
+    </style>
+</head>
+<body>
+    <a href="index_.html" class="logo">
+        <img src="Eclipse🌑Hub.png" alt="Eclipse🌑Hub">
+    </a>
+    <canvas class="matrix-bg"></canvas>
+    <div class="crack-container">
+        <div class="crack-title">Crack The Code</div>
+        <div class="crack-desc">
+            <i class="fa-solid fa-user-secret"></i><br>
+            Welcome to the hacking challenge.<br>
+            Enter your email and name to receive a code.<br>
+        </div>
+        <label class="input-label" for="nameInput">Name:</label>
+        <input type="text" id="nameInput" class="input-field" placeholder="Your name">
+        <label class="input-label" for="emailInput">Email:</label>
+        <input type="email" id="emailInput" class="input-field" placeholder="Your email">
+        <button id="sendCodeBtn" class="btn">Send Code</button>
+        <input type="text" id="codeInput" class="input-field" placeholder="Enter code...">
+        <button id="submitCode" class="btn">Submit</button>
+        <div id="codeResult"></div>
+    </div>
+    <button class="back-btn" id="backBtn"><i class="fa-solid fa-turn-left"></i></button>
+    
+    <!-- EmailJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+        // Matrix background animation
+        const canvas = document.querySelector('.matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()';
+        const fontSize = 10;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(24, 24, 24, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        setInterval(drawMatrix, 35);
+
+        // EmailJS Configuration
+        const EMAILJS_PUBLIC_KEY = 'bDKkeR0UwSJkAeCwM'; // Your EmailJS Public Key
+        const SERVICE_ID = 'service_qpztxp8';            // Your Service ID  
+        const TEMPLATE_ID = 'template_ra5z89o';          // Template for verification code
+        const PASSWORD_TEMPLATE_ID = 'template_t1krvhq'; // Template for website password
+
+        // Initialize EmailJS
+        if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY_HERE') {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
+
+        let generatedCode = "";
+        let codeExpireTime = null;
+        let codeTimerInterval = null;
+        let userEmail = "";  // Store user email for password email
+        let userName = "";   // Store user name for password email
+
+        function showMessage(message, type = 'info') {
+            const result = document.getElementById('codeResult');
+            result.textContent = message;
+            result.className = type;
+        }
+
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        document.getElementById('sendCodeBtn').addEventListener('click', async () => {
+            const name = document.getElementById('nameInput').value.trim();
+            const email = document.getElementById('emailInput').value.trim();
+            const sendBtn = document.getElementById('sendCodeBtn');
+            
+            // Validation
+            if (!name || !email) {
+                showMessage("Please enter both name and email.", 'error');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showMessage("Please enter a valid email address.", 'error');
+                return;
+            }
+
+            // Check if EmailJS is properly configured
+            if (EMAILJS_PUBLIC_KEY === 'YOUR_PUBLIC_KEY_HERE' || 
+                SERVICE_ID === 'YOUR_SERVICE_ID_HERE' || 
+                TEMPLATE_ID === 'YOUR_TEMPLATE_ID_HERE') {
+                showMessage("⚙️ Please configure EmailJS credentials first!", 'error');
+                return;
+            }
+
+            // Store user details for later use
+            userEmail = email;
+            userName = name;
+
+            // Disable button during send
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            showMessage("Sending code...", 'warning');
+
+            try {
+                // Generate random 6-character code
+                generatedCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+                
+                // Set expire time (15 minutes from now)
+                const now = new Date();
+                codeExpireTime = new Date(now.getTime() + 15 * 60000);
+                
+                // Format expire time as HH:MM
+                const expireHour = codeExpireTime.getHours().toString().padStart(2, '0');
+                const expireMin = codeExpireTime.getMinutes().toString().padStart(2, '0');
+                const expireTimeStr = `${expireHour}:${expireMin}`;
+
+                // Send email using EmailJS
+                const templateParams = {
+                    to_name: name,
+                    to_email: email,
+                    user_email: email,  // Alternative field name
+                    reply_to: email,    // Alternative field name
+                    passcode: generatedCode,
+                    time: expireTimeStr,
+                    name: name,
+                    user_name: name,    // Alternative field name
+                    recipient_name: name, // Alternative field name
+                    message: `Your verification code is: ${generatedCode}. This code expires at ${expireTimeStr}.`
+                };
+
+                const response = await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams);
+                
+                console.log('EmailJS Response:', response);
+                
+                if (response.status === 200) {
+                    showMessage(`✅ Code sent to ${email}! Expires at ${expireTimeStr}.`, 'success');
+                    startCodeTimer();
+                } else {
+                    throw new Error(`Email send failed with status: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('EmailJS Error Details:', error);
+                
+                let errorMessage = "Failed to send email. ";
+                
+                if (error.text) {
+                    errorMessage += `Error: ${error.text}`;
+                } else if (error.message) {
+                    errorMessage += `Error: ${error.message}`;
+                } else {
+                    errorMessage += "Please check your EmailJS configuration.";
+                }
+                
+                // Common error suggestions
+                if (error.status === 400) {
+                    errorMessage += " (Check template variables)";
+                } else if (error.status === 403) {
+                    errorMessage += " (Check service/template permissions)";
+                } else if (error.status === 404) {
+                    errorMessage += " (Service or template not found)";
+                }
+                
+                showMessage(errorMessage, 'error');
+                generatedCode = "";
+                codeExpireTime = null;
+            } finally {
+                // Re-enable button
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send Code';
+            }
+        });
+
+        function startCodeTimer() {
+            clearInterval(codeTimerInterval);
+            const submitBtn = document.getElementById('submitCode');
+            
+            codeTimerInterval = setInterval(() => {
+                const now = new Date();
+                
+                if (codeExpireTime && now > codeExpireTime) {
+                    submitBtn.disabled = true;
+                    showMessage("⏰ Code expired. Please request a new code.", 'error');
+                    clearInterval(codeTimerInterval);
+                    generatedCode = "";
+                    codeExpireTime = null;
+                } else if (codeExpireTime) {
+                    const diff = Math.max(0, Math.floor((codeExpireTime - now) / 1000));
+                    const min = Math.floor(diff / 60);
+                    const sec = (diff % 60).toString().padStart(2, '0');
+                    showMessage(`Code expires in ${min}:${sec}`, 'warning');
+                    submitBtn.disabled = false;
+                }
+            }, 1000);
+        }
+
+        document.getElementById('submitCode').addEventListener('click', async () => {
+            const code = document.getElementById('codeInput').value.trim().toUpperCase();
+            const now = new Date();
+            
+            // Check if code is expired
+            if (!generatedCode || !codeExpireTime || now > codeExpireTime) {
+                showMessage("⏰ Code expired. Please request a new code.", 'error');
+                document.getElementById('submitCode').disabled = true;
+                return;
+            }
+            
+            // Validate input
+            if (!code) {
+                showMessage("Please enter a code.", 'error');
+                return;
+            }
+            
+            // Check code
+            if (code === generatedCode) {
+                showMessage("✅ Code cracked! Sending website password...", 'success');
+                clearInterval(codeTimerInterval);
+                
+                // Disable further submissions
+                document.getElementById('submitCode').disabled = true;
+                document.getElementById('codeInput').disabled = true;
+                
+                try {
+                    // Send password email
+                    const passwordParams = {
+                        to_name: userName,
+                        to_email: userEmail,
+                        name: userName,
+                        website_password: 'therizzgrade',
+                        message: 'Congratulations! You have successfully cracked the code. Here is your website password: ilovehackerhub'
+                    };
+
+                    const passwordResponse = await emailjs.send(SERVICE_ID, PASSWORD_TEMPLATE_ID, passwordParams);
+                    
+                    if (passwordResponse.status === 200) {
+                        showMessage("🎉 Website password sent to your email! Welcome, elite hacker.", 'success');
+                        
+                        // Optional: Redirect to main site after delay
+                        setTimeout(() => {
+                            // You can uncomment this line if you want to redirect
+                            // window.location.href = "index.html";
+                        }, 3000);
+                    } else {
+                        showMessage("✅ Code correct! But failed to send password email. Password: ilovehackerhub", 'warning');
+                    }
+                } catch (error) {
+                    console.error('Password email error:', error);
+                    showMessage("✅ Code correct! But failed to send password email. Password: ilovehackerhub", 'warning');
+                }
+                
+            } else {
+                showMessage("❌ Incorrect code. Try again!", 'error');
+            }
+        });
+
+        // Back button functionality
+        document.getElementById('backBtn').addEventListener('click', () => {
+            // Clear all data and reset form
+            generatedCode = "";
+            codeExpireTime = null;
+            clearInterval(codeTimerInterval);
+            
+            document.getElementById('nameInput').value = '';
+            document.getElementById('emailInput').value = '';
+            document.getElementById('codeInput').value = '';
+            document.getElementById('codeInput').disabled = false;
+            document.getElementById('submitCode').disabled = false;
+            showMessage("Form reset. Ready for new attempt.", 'success');
+        });
+
+        // Allow Enter key to submit
+        document.getElementById('codeInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('submitCode').click();
+            }
+        });
+
+        // Resize canvas on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>

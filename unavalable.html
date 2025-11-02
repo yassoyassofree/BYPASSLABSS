@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ixl</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="exit-button-container">
+        <button class="exit-btn" onclick="exitToHome()" title="Return to Home (ESC key)">
+            <i class="fas fa-home"></i> HOME
+        </button>
+    </div>
+    <script src="authGuard.js"></script>
+    <div class="container">
+        <h1>Unavailable</h1>
+        <p>We're sorry, but the feature is currently unavailable. Please try again later.</p>
+    </div>
+</body>
+<script>// Add keyboard shortcut listener at the document level
+    document.addEventListener('keydown', function(event) {
+        // Check for Ctrl + B
+        if (event.ctrlKey && event.key.toLowerCase() === 'b') {
+            event.preventDefault(); // Prevent default browser behavior
+            window.location.href = 'https://classroom.google.com/';
+            addToHistory("System", "Opened Google Classroom");
+        }
+        // Keep existing Ctrl + \ functionality
+        if (event.ctrlKey && event.key === '\\') {
+            if (document.getElementById("adminHistoryContainer").style.display === "block") {
+                document.getElementById("adminHistoryContainer").style.display = "none";
+                addToHistory("Admin", "Closed admin powers");
+                alert("Admin powers have been closed");
+            }
+        }
+    });</script>
+    
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ixl</title>
+</head>
+<body>
+    <h1>click to open a Document</h1>
+    <a href="https://docs.google.com/document/d/1xmjz0lRwQbMg-lAObDBku2EeY2NEQqnZ3bng-h9VjAQ/edit?tab=t.0" download="click here">click here</a>
+</body>
+<script>// Add keyboard shortcut listener at the document level
+    document.addEventListener('keydown', function(event) {
+        // Check for Ctrl + B
+        if (event.ctrlKey && event.key.toLowerCase() === 'b') {
+            event.preventDefault(); // Prevent default browser behavior
+            window.location.href = 'https://classroom.google.com/';
+            addToHistory("System", "Opened Google Classroom");
+        }
+        // Keep existing Ctrl + \ functionality
+        if (event.ctrlKey && event.key === '\\') {
+            if (document.getElementById("adminHistoryContainer").style.display === "block") {
+                document.getElementById("adminHistoryContainer").style.display = "none";
+                addToHistory("Admin", "Closed admin powers");
+                alert("Admin powers have been closed");
+            }
+        }
+    });</script>
+</html>

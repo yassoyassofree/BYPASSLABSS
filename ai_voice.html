@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .mp3-player {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .mp3-player h3 {
+            margin-top: 0;
+        }
+        audio {
+            width: 100%;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Voice Generator</h1>
+        <p>Enter your ElevenLabs API key, voice IDs (create custom voices using the MP3 samples), text, and select a voice to generate cloned speech.</p>
+
+
+
+        <label for="text-input">Text to speak:</label>
+        <textarea id="text-input" placeholder="Enter the text you want to convert to speech..."></textarea>
+
+        <label for="voice-select">Select Voice:</label>
+        <select id="voice-select">
+            <option value="trump">Donald Trump</option>
+            <option value="ishowspeed">IShowSpeed</option>
+        </select>
+
+        <button id="generate-btn" onclick="generateSpeech()">Generate and Play Speech</button>
+
+        <div id="status" class="status"></div>
+
+        <div class="mp3-player">
+            <h3>Original MP3 Samples</h3>
+            <p>Use these to create custom voices on ElevenLabs:</p>
+            <audio controls>
+                <source src="Donald Trump shuts down CNN reporter： ＂You're fake news＂.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+            <br><br>
+            <audio controls>
+                <source src="I Fixed My Ronaldo Tattoo!.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ElevenLabsClient, play } from 'https://esm.sh/@elevenlabs/elevenlabs-js@1.0.0';
+
+        async function generateSpeech() {
+            const apiKey = 'sk_6778413ee3cb5f6ffd7ad41d62a0bfaf12e811f3f50b1f8e';
+            const text = document.getElementById('text-input').value;
+            const voiceSelect = document.getElementById('voice-select').value;
+            const trumpVoiceId = 'cg4e5MblgDRdUzT8ZQPU';
+            const ishowspeedVoiceId = 'uGSmxHzdZRBrwFabkzC2';
+            const statusDiv = document.getElementById('status');
+            const generateBtn = document.getElementById('generate-btn');
+
+            if (!text.trim()) {
+                showStatus('Please enter text to speak.', 'error');
+                return;
+            }
+
+            const voiceId = voiceSelect === 'trump' ? trumpVoiceId : ishowspeedVoiceId;
+
+            generateBtn.disabled = true;
+            generateBtn.textContent = 'Generating...';
+            showStatus('Generating speech...', 'success');
+
+            try {
+                const elevenlabs = new ElevenLabsClient({
+                    apiKey: apiKey
+                });
+
+                const audioStream = await elevenlabs.textToSpeech.convert(voiceId, {
+                    text: text,
+                    modelId: 'eleven_multilingual_v2',
+                    outputFormat: 'mp3_44100_128'
+                });
+
+                // Create a blob from the audio stream
+                const audioBlob = new Blob([audioStream], { type: 'audio/mpeg' });
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                // Create an audio element and play it
+                const audioElement = new Audio(audioUrl);
+                audioElement.play();
+
+                showStatus('Speech generated and playing!', 'success');
+            } catch (error) {
+                console.error('Error generating speech:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = 'Generate and Play Speech';
+            }
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+
+        // Make generateSpeech available globally
+        window.generateSpeech = generateSpeech;
+    </script>
+</body>
+</html>

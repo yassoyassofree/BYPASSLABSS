@@ -1,0 +1,21 @@
+{
+  "typeCheckingMode": "basic",
+  "diagnosticSeverityOverrides": {
+    "reportMissingTypeStubs": "none",
+    "reportUnknownVariableType": "none",
+    "reportUnknownParameterType": "none",
+    "reportUnknownArgumentType": "none",
+    "reportUnknownMemberType": "none",
+    "reportOptionalSubscript": "none",
+    "reportOptionalMemberAccess": "none",
+    "reportOptionalIterable": "none",
+    "reportAttributeAccessIssue": "none",
+    "reportArgumentType": "none",
+    "reportMissingModuleSource": "none"
+  },
+  "exclude": [
+    "node_modules",
+    "**/__pycache__",
+    "**/.*"
+  ]
+}

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Fetch Tester</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .results h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .result-content {
+            color: #333;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .error {
+            background: #fee;
+            border-left-color: #e74c3c;
+            color: #c0392b;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Web Content Fetcher</h1>
+        <p class="subtitle">Test fetching website content and extracting specific elements</p>
+        
+        <div class="input-group">
+            <label for="urlInput">Website URL:</label>
+            <input type="text" id="urlInput" placeholder="https://example.com" value="https://example.com">
+        </div>
+        
+        <div class="input-group">
+            <label for="selectorInput">CSS Selector (optional - to extract specific content):</label>
+            <input type="text" id="selectorInput" placeholder="e.g., h1, .title, #content">
+        </div>
+        
+        <button id="fetchBtn" onclick="fetchWebsite()">Fetch Website Content</button>
+        
+        <div id="results"></div>
+    </div>
+<script src="authGuard.js"></script>
+    <script>
+        async function fetchWebsite() {
+            const url = document.getElementById('urlInput').value.trim();
+            const selector = document.getElementById('selectorInput').value.trim();
+            const resultsDiv = document.getElementById('results');
+            const fetchBtn = document.getElementById('fetchBtn');
+            
+            if (!url) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a URL</div>';
+                return;
+            }
+            
+            // Basic URL validation
+            try {
+                new URL(url);
+            } catch (e) {
+                resultsDiv.innerHTML = '<div class="error">Invalid URL format. Make sure to include https://</div>';
+                return;
+            }
+            
+            fetchBtn.disabled = true;
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Fetching content...</div>';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'text/html,application/xhtml+xml'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const html = await response.text();
+                
+                // Parse HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                let results = '<div class="results"><h2>✅ Fetch Successful</h2>';
+                
+                // Show basic info
+                results += '<div class="result-item">';
+                results += '<div class="result-label">Status:</div>';
+                results += `<div class="result-content">${response.status} ${response.statusText}</div>`;
+                results += '</div>';
+                
+                results += '<div class="result-item">';
+                results += '<div class="result-label">Content Length:</div>';
+                results += `<div class="result-content">${html.length} characters</div>`;
+                results += '</div>';
+                
+                // Get title
+                const title = doc.querySelector('title');
+                if (title) {
+                    results += '<div class="result-item">';
+                    results += '<div class="result-label">Page Title:</div>';
+                    results += `<div class="result-content">${title.textContent}</div>`;
+                    results += '</div>';
+                }
+                
+                // If selector provided, try to extract that content
+                if (selector) {
+                    const elements = doc.querySelectorAll(selector);
+                    results += '<div class="result-item">';
+                    results += '<div class="result-label">Selected Elements (${selector}):</div>';
+                    
+                    if (elements.length > 0) {
+                        results += `<div class="result-content">Found ${elements.length} element(s):<br><br>`;
+                        elements.forEach((el, i) => {
+                            if (i < 5) { // Limit to first 5 elements
+                                results += `[${i + 1}] ${el.textContent.trim().substring(0, 200)}...<br><br>`;
+                            }
+                        });
+                        results += '</div>';
+                    } else {
+                        results += '<div class="result-content">No elements found with that selector</div>';
+                    }
+                    results += '</div>';
+                }
+                
+                // Show first 500 chars of HTML
+                results += '<div class="result-item">';
+                results += '<div class="result-label">HTML Preview (first 500 chars):</div>';
+                results += `<div class="result-content">${html.substring(0, 500).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`;
+                results += '</div>';
+                
+                results += '</div>';
+                resultsDiv.innerHTML = results;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <strong>❌ Fetch Failed</strong><br><br>
+                        ${error.message}<br><br>
+                        <strong>Possible reasons:</strong><br>
+                        • CORS policy blocking the request<br>
+                        • Website doesn't allow scraping<br>
+                        • Invalid URL<br>
+                        • Network error
+                    </div>
+                `;
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style scr="button.css"></style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ixl</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 25% 25%, #003300 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, #001100 0%, transparent 50%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .terminal-header {
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px solid #00ff00;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        .ascii-art {
+            font-size: 12px;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .system-info {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #33ff33;
+        }
+
+        .blink {
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .section {
+            margin-bottom: 30px;
+            border-left: 3px solid #00ff00;
+            padding-left: 15px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .link-item {
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid #004400;
+            padding: 8px 12px;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-item:hover {
+            background: rgba(0, 255, 0, 0.15);
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+            transform: translateX(5px);
+        }
+
+        .link-item::before {
+            content: '> ';
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .link-item a {
+            color: #66ff66;
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.3s ease;
+        }
+
+        .link-item a:hover {
+            color: #ffffff;
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #003300;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .link-item:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: #00ff00;
+            color: #000000;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #006600;
+            border-top: 1px solid #003300;
+            padding-top: 20px;
+        }
+
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        @keyframes matrix {
+            0% { transform: translateY(-100vh); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .matrix-char {
+            position: absolute;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            animation: matrix 10s linear infinite;
+        }
+
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #001100;
+            border-top: 1px solid #00ff00;
+            padding: 8px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #003300;
+            border: 1px solid #00ff00;
+            padding: 10px 15px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    <div class="exit-button-container">
+        <button class="exit-btn" onclick="exitToHome()" title="Return to Home (ESC key)">
+            <i class="fas fa-home"></i> HOME
+        </button>
+    </div>
+    <div class="notification" id="notification">Link copied to clipboard!</div>
+    
+    <div class="terminal-header">
+        <div class="ascii-art">
+██████╗ ██████╗  ██████╗ ██╗  ██╗██╗   ██╗    ██╗     ██╗███╗   ██╗██╗  ██╗███████╗
+██╔══██╗██╔══██╗██╔═══██╗╚██╗██╔╝╚██╗ ██╔╝    ██║     ██║████╗  ██║██║ ██╔╝██╔════╝
+██████╔╝██████╔╝██║   ██║ ╚███╔╝  ╚████╔╝     ██║     ██║██╔██╗ ██║█████╔╝ ███████╗
+██╔═══╝ ██╔══██╗██║   ██║ ██╔██╗   ╚██╔╝      ██║     ██║██║╚██╗██║██╔═██╗ ╚════██║
+██║     ██║  ██║╚██████╔╝██╔╝ ██╗   ██║       ███████╗██║██║ ╚████║██║  ██╗███████║
+╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝
+        </div>
+        <div class="system-info">
+            SYSTEM: PROXY_ACCESS_TERMINAL v2.1 | STATUS: <span class="blink">ONLINE</span><br>
+            SECURITY LEVEL: MAXIMUM | CONNECTIONS: ENCRYPTED
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» INTERSTELLAR PROXIES «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://imintheskibofiteverybodyknows.recca.cl" target="_blank">imintheskibofiteverybodyknows.recca.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://imintheskibofiteverybodyknows.recca.cl')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://2he1he.atf.com.np" target="_blank">2he1he.atf.com.np</a>
+                <button class="copy-btn" onclick="copyLink('https://2he1he.atf.com.np')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://for-the-dyknow-and-goguardians-a-free-link.recca.cl" target="_blank">for-the-dyknow-and-goguardians-a-free-link.recca.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://for-the-dyknow-and-goguardians-a-free-link.recca.cl')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://iamsteve.raspberryip.com/" target="_blank">iamsteve.raspberryip.com</a>
+                <button class="copy-btn" onclick="copyLink('https://iamsteve.raspberryip.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://web0213.medscience.cl" target="_blank">web0213.medscience.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://web0213.medscience.cl')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» RAMMERHEAD NETWORK «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://bandogsfrom.peeinthesnow.com/" target="_blank">bandogsfrom.peeinthesnow.com</a>
+                <button class="copy-btn" onclick="copyLink('https://bandogsfrom.peeinthesnow.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://pirate.wildsurf.net/" target="_blank">pirate.wildsurf.net</a>
+                <button class="copy-btn" onclick="copyLink('https://pirate.wildsurf.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://packetyo.nanbang.com.tr/" target="_blank">packetyo.nanbang.com.tr</a>
+                <button class="copy-btn" onclick="copyLink('https://packetyo.nanbang.com.tr/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://holaernesto.triplewipe.ru/" target="_blank">holaernesto.triplewipe.ru</a>
+                <button class="copy-btn" onclick="copyLink('https://holaernesto.triplewipe.ru/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://jdsiojjifjis.oovb.com/" target="_blank">jdsiojjifjis.oovb.com</a>
+                <button class="copy-btn" onclick="copyLink('https://jdsiojjifjis.oovb.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dismantled.charbel.cl/" target="_blank">dismantled.charbel.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://dismantled.charbel.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://vectorgpt.boxathome.net/" target="_blank">vectorgpt.boxathome.net</a>
+                <button class="copy-btn" onclick="copyLink('https://vectorgpt.boxathome.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://femboysfr.lain.ch/" target="_blank">femboysfr.lain.ch</a>
+                <button class="copy-btn" onclick="copyLink('https://femboysfr.lain.ch/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://theunionforever.tenspot.net/" target="_blank">theunionforever.tenspot.net</a>
+                <button class="copy-btn" onclick="copyLink('https://theunionforever.tenspot.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://gothgirlsareawesome.flamex.hm/" target="_blank">gothgirlsareawesome.flamex.hm</a>
+                <button class="copy-btn" onclick="copyLink('https://gothgirlsareawesome.flamex.hm/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://readmuvluv.happyforever.com/" target="_blank">readmuvluv.happyforever.com</a>
+                <button class="copy-btn" onclick="copyLink('https://readmuvluv.happyforever.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://kozownoprxy.kozow.com/" target="_blank">kozownoprxy.kozow.com</a>
+                <button class="copy-btn" onclick="copyLink('https://kozownoprxy.kozow.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://block.undo.cl/" target="_blank">block.undo.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://block.undo.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://mylo.estic.org/" target="_blank">mylo.estic.org</a>
+                <button class="copy-btn" onclick="copyLink('https://mylo.estic.org/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» UTOPIA NETWORK «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://minds.plant.theseks.net/" target="_blank">minds.plant.theseks.net</a>
+                <button class="copy-btn" onclick="copyLink('https://minds.plant.theseks.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://proof.major.archanet.org/" target="_blank">proof.major.archanet.org</a>
+                <button class="copy-btn" onclick="copyLink('https://proof.major.archanet.org/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://topic.craft.prazerdiario.com/" target="_blank">topic.craft.prazerdiario.com</a>
+                <button class="copy-btn" onclick="copyLink('https://topic.craft.prazerdiario.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://lab.graph.central64.com/" target="_blank">lab.graph.central64.com</a>
+                <button class="copy-btn" onclick="copyLink('https://lab.graph.central64.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://vocab.real.cyberbeatnation.net/" target="_blank">vocab.real.cyberbeatnation.net</a>
+                <button class="copy-btn" onclick="copyLink('https://vocab.real.cyberbeatnation.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://smart.quiz.nelsonshack.com/" target="_blank">smart.quiz.nelsonshack.com</a>
+                <button class="copy-btn" onclick="copyLink('https://smart.quiz.nelsonshack.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://task.words.starlordbob.com/" target="_blank">task.words.starlordbob.com</a>
+                <button class="copy-btn" onclick="copyLink('https://task.words.starlordbob.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://tutor.real.avidgirl.com/" target="_blank">tutor.real.avidgirl.com</a>
+                <button class="copy-btn" onclick="copyLink('https://tutor.real.avidgirl.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://gov.arts.lizze.org/" target="_blank">gov.arts.lizze.org</a>
+                <button class="copy-btn" onclick="copyLink('https://gov.arts.lizze.org/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://add.goal.wvrealview.com/" target="_blank">add.goal.wvrealview.com</a>
+                <button class="copy-btn" onclick="copyLink('https://add.goal.wvrealview.com/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» GHOST PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://nirbytesghost.clienturl.net/" target="_blank">nirbytesghost.clienturl.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbytesghost.clienturl.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirbytghostpro.govt.hu/" target="_blank">nirbytghostpro.govt.hu</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbytghostpro.govt.hu/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://ghostxpen.moonangel.com/" target="_blank">ghostxpen.moonangel.com</a>
+                <button class="copy-btn" onclick="copyLink('https://ghostxpen.moonangel.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://feedonblood.bolboroace.ro/" target="_blank">feedonblood.bolboroace.ro</a>
+                <button class="copy-btn" onclick="copyLink('https://feedonblood.bolboroace.ro/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://earthmowers.gabrielamelopropiedades.cl/" target="_blank">earthmowers.gabrielamelopropiedades.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://earthmowers.gabrielamelopropiedades.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sentries.kategentry.com/" target="_blank">sentries.kategentry.com</a>
+                <button class="copy-btn" onclick="copyLink('https://sentries.kategentry.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://swordmachines.laxmikarmacharya.com.np/" target="_blank">swordmachines.laxmikarmacharya.com.np</a>
+                <button class="copy-btn" onclick="copyLink('https://swordmachines.laxmikarmacharya.com.np/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://guttermans.manggalaperkasa.com/" target="_blank">guttermans.manggalaperkasa.com</a>
+                <button class="copy-btn" onclick="copyLink('https://guttermans.manggalaperkasa.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://hopedies.skyhop.us/" target="_blank">hopedies.skyhop.us</a>
+                <button class="copy-btn" onclick="copyLink('https://hopedies.skyhop.us/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://godhasleft.momgod.com/" target="_blank">godhasleft.momgod.com</a>
+                <button class="copy-btn" onclick="copyLink('https://godhasleft.momgod.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://humankindisafailure.kindy4kids.com.au/" target="_blank">humankindisafailure.kindy4kids.com.au</a>
+                <button class="copy-btn" onclick="copyLink('https://humankindisafailure.kindy4kids.com.au/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://freewillisaflaw.ddnsfree.top/" target="_blank">freewillisaflaw.ddnsfree.top</a>
+                <button class="copy-btn" onclick="copyLink('https://freewillisaflaw.ddnsfree.top/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://hellbreaksloose.barryscloset.com/" target="_blank">hellbreaksloose.barryscloset.com</a>
+                <button class="copy-btn" onclick="copyLink('https://hellbreaksloose.barryscloset.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://fear.fearenough.com/" target="_blank">fear.fearenough.com</a>
+                <button class="copy-btn" onclick="copyLink('https://fear.fearenough.com/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» RAMMERHEAD PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://oh.zjhmz.cn/" target="_blank">oh.zjhmz.cn</a>
+                <button class="copy-btn" onclick="copyLink('https://oh.zjhmz.cn/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://drive.google.com.laoxz.cn/" target="_blank">drive.google.com.laoxz.cn</a>
+                <button class="copy-btn" onclick="copyLink('https://drive.google.com.laoxz.cn/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://boi.ax1951.com/" target="_blank">boi.ax1951.com</a>
+                <button class="copy-btn" onclick="copyLink('https://boi.ax1951.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dreamofbonky.alptechflow.com/" target="_blank">dreamofbonky.alptechflow.com</a>
+                <button class="copy-btn" onclick="copyLink('https://dreamofbonky.alptechflow.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://notsuchagoodideabro.quality-electronics.com/" target="_blank">notsuchagoodideabro.quality-electronics.com</a>
+                <button class="copy-btn" onclick="copyLink('https://notsuchagoodideabro.quality-electronics.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://kingofthepirates.cryodome.com/" target="_blank">kingofthepirates.cryodome.com</a>
+                <button class="copy-btn" onclick="copyLink('https://kingofthepirates.cryodome.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://rc-1207.conyser.cl/" target="_blank">rc-1207.conyser.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://rc-1207.conyser.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://calitech.pits.cl/" target="_blank">calitech.pits.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://calitech.pits.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://gym.clas.swork.networkindia.com/" target="_blank">gym.clas.swork.networkindia.com</a>
+                <button class="copy-btn" onclick="copyLink('https://gym.clas.swork.networkindia.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://drive.google.com.mikata.ru/" target="_blank">drive.google.com.mikata.ru</a>
+                <button class="copy-btn" onclick="copyLink('https://drive.google.com.mikata.ru/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sixseven41.servernux.com/" target="_blank">sixseven41.servernux.com</a>
+                <button class="copy-btn" onclick="copyLink('https://sixseven41.servernux.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://chicken2.404.mn/" target="_blank">chicken2.404.mn</a>
+                <button class="copy-btn" onclick="copyLink('https://chicken2.404.mn/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» SHADOW PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://fooddrive.stormfood.com/" target="_blank">fooddrive.stormfood.com</a>
+                <button class="copy-btn" onclick="copyLink('https://fooddrive.stormfood.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://solidreading.gkihalimun.org/" target="_blank">solidreading.gkihalimun.org</a>
+                <button class="copy-btn" onclick="copyLink('https://solidreading.gkihalimun.org/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://easybio.bridgeslab.net/" target="_blank">easybio.bridgeslab.net</a>
+                <button class="copy-btn" onclick="copyLink('https://easybio.bridgeslab.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://rapidcalc.rpvf.com/" target="_blank">rapidcalc.rpvf.com</a>
+                <button class="copy-btn" onclick="copyLink('https://rapidcalc.rpvf.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://novahistory.ibernoticias.com/" target="_blank">novahistory.ibernoticias.com</a>
+                <button class="copy-btn" onclick="copyLink('https://novahistory.ibernoticias.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://procoding.dragrecords.com.au/" target="_blank">procoding.dragrecords.com.au</a>
+                <button class="copy-btn" onclick="copyLink('https://procoding.dragrecords.com.au/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://virtualalgebra.siniritarit.fi/" target="_blank">virtualalgebra.siniritarit.fi</a>
+                <button class="copy-btn" onclick="copyLink('https://virtualalgebra.siniritarit.fi/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://topliterature.sunrise.org.uk/" target="_blank">topliterature.sunrise.org.uk</a>
+                <button class="copy-btn" onclick="copyLink('https://topliterature.sunrise.org.uk/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://quickphysics.a-quo.com/" target="_blank">quickphysics.a-quo.com</a>
+                <button class="copy-btn" onclick="copyLink('https://quickphysics.a-quo.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://keencalc.ivc.org.ar/" target="_blank">keencalc.ivc.org.ar</a>
+                <button class="copy-btn" onclick="copyLink('https://keencalc.ivc.org.ar/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://alphaphysics.johnwarburton.net/" target="_blank">alphaphysics.johnwarburton.net</a>
+                <button class="copy-btn" onclick="copyLink('https://alphaphysics.johnwarburton.net/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» UTOPIA PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://math.bio.dalbosco.net/" target="_blank">math.bio.dalbosco.net</a>
+                <button class="copy-btn" onclick="copyLink('https://math.bio.dalbosco.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://recap.grade.kredytlinia.pl/" target="_blank">recap.grade.kredytlinia.pl</a>
+                <button class="copy-btn" onclick="copyLink('https://recap.grade.kredytlinia.pl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://graph.words.savatech.ch/" target="_blank">graph.words.savatech.ch</a>
+                <button class="copy-btn" onclick="copyLink('https://graph.words.savatech.ch/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://piano.math.baikabibai.com/" target="_blank">piano.math.baikabibai.com</a>
+                <button class="copy-btn" onclick="copyLink('https://piano.math.baikabibai.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sage.course.spacetechnology.net/" target="_blank">sage.course.spacetechnology.net</a>
+                <button class="copy-btn" onclick="copyLink('https://sage.course.spacetechnology.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://excel.proof.cot.lt/" target="_blank">excel.proof.cot.lt</a>
+                <button class="copy-btn" onclick="copyLink('https://excel.proof.cot.lt/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://learn.science.freak.nard.ca/" target="_blank">learn.science.freak.nard.ca</a>
+                <button class="copy-btn" onclick="copyLink('https://learn.science.freak.nard.ca/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://josephsutopiaaa.benjaminbartlett.net/" target="_blank">josephsutopiaaa.benjaminbartlett.net</a>
+                <button class="copy-btn" onclick="copyLink('https://josephsutopiaaa.benjaminbartlett.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://josephsutopia.novff.ru/" target="_blank">josephsutopia.novff.ru</a>
+                <button class="copy-btn" onclick="copyLink('https://josephsutopia.novff.ru/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://skibidilibidimibidi.mooo.com/" target="_blank">skibidilibidimibidi.mooo.com</a>
+                <button class="copy-btn" onclick="copyLink('https://skibidilibidimibidi.mooo.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://google.com.teachinghospital.org.np/" target="_blank">google.com.teachinghospital.org.np</a>
+                <button class="copy-btn" onclick="copyLink('https://google.com.teachinghospital.org.np/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://donotblockthisschool.crabdance.com/" target="_blank">donotblockthisschool.crabdance.com</a>
+                <button class="copy-btn" onclick="copyLink('https://donotblockthisschool.crabdance.com/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» DAYDREAM X PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://chromebookuserxdixo.synoserver.com/" target="_blank">chromebookuserxdixo.synoserver.com</a>
+                <button class="copy-btn" onclick="copyLink('https://chromebookuserxdixo.synoserver.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://imix.synoserver.com/" target="_blank">imix.synoserver.com</a>
+                <button class="copy-btn" onclick="copyLink('https://imix.synoserver.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirbytesxdayprox.synoserver.com/" target="_blank">nirbytesxdayprox.synoserver.com</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbytesxdayprox.synoserver.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sanganirb.synoserver.com/" target="_blank">sanganirb.synoserver.com</a>
+                <button class="copy-btn" onclick="copyLink('https://sanganirb.synoserver.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://soulemproxvip.synoserver.com/" target="_blank">soulemproxvip.synoserver.com</a>
+                <button class="copy-btn" onclick="copyLink('https://soulemproxvip.synoserver.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://cobrakinir.3cm.us/" target="_blank">cobrakinir.3cm.us</a>
+                <button class="copy-btn" onclick="copyLink('https://cobrakinir.3cm.us/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://schooluxer.3cm.us/" target="_blank">schooluxer.3cm.us</a>
+                <button class="copy-btn" onclick="copyLink('https://schooluxer.3cm.us/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://senvenigi.3cm.us/" target="_blank">senvenigi.3cm.us</a>
+                <button class="copy-btn" onclick="copyLink('https://senvenigi.3cm.us/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://solenirbytes.3cm.us/" target="_blank">solenirbytes.3cm.us</a>
+                <button class="copy-btn" onclick="copyLink('https://solenirbytes.3cm.us/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://worldkein.3cm.us/" target="_blank">worldkein.3cm.us</a>
+                <button class="copy-btn" onclick="copyLink('https://worldkein.3cm.us/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» SPACE PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://embranxeo.host2go.net/" target="_blank">embranxeo.host2go.net</a>
+                <button class="copy-btn" onclick="copyLink('https://embranxeo.host2go.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://erbytes.host2go.net/" target="_blank">erbytes.host2go.net</a>
+                <button class="copy-btn" onclick="copyLink('https://erbytes.host2go.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirbytexeroxm.host2go.net/" target="_blank">nirbytexeroxm.host2go.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbytexeroxm.host2go.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirpxei.host2go.net/" target="_blank">nirpxei.host2go.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nirpxei.host2go.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sanhokviprox.host2go.net/" target="_blank">sanhokviprox.host2go.net</a>
+                <button class="copy-btn" onclick="copyLink('https://sanhokviprox.host2go.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://clenproxy.blinklab.com/" target="_blank">clenproxy.blinklab.com</a>
+                <button class="copy-btn" onclick="copyLink('https://clenproxy.blinklab.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://clovemani.blinklab.com/" target="_blank">clovemani.blinklab.com</a>
+                <button class="copy-btn" onclick="copyLink('https://clovemani.blinklab.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://hgjjhfsgfhjghvvbg.blinklab.com/" target="_blank">hgjjhfsgfhjghvvbg.blinklab.com</a>
+                <button class="copy-btn" onclick="copyLink('https://hgjjhfsgfhjghvvbg.blinklab.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://skjhyujjh.blinklab.com/" target="_blank">skjhyujjh.blinklab.com</a>
+                <button class="copy-btn" onclick="copyLink('https://skjhyujjh.blinklab.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://sirixemndii.cbu.net/" target="_blank">sirixemndii.cbu.net</a>
+                <button class="copy-btn" onclick="copyLink('https://sirixemndii.cbu.net/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» FREEDOM PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://weather.meteorological.co/" target="_blank">weather.meteorological.co</a>
+                <button class="copy-btn" onclick="copyLink('https://weather.meteorological.co/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://editor.codingwizard.website/" target="_blank">editor.codingwizard.website</a>
+                <button class="copy-btn" onclick="copyLink('https://editor.codingwizard.website/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://submit.formengineer.org/" target="_blank">submit.formengineer.org</a>
+                <button class="copy-btn" onclick="copyLink('https://submit.formengineer.org/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://listings.fpp.realty/" target="_blank">listings.fpp.realty</a>
+                <button class="copy-btn" onclick="copyLink('https://listings.fpp.realty/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://tips.cosmetologylive.beauty/" target="_blank">tips.cosmetologylive.beauty</a>
+                <button class="copy-btn" onclick="copyLink('https://tips.cosmetologylive.beauty/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://inspiration.stationerycrafts.shop/" target="_blank">inspiration.stationerycrafts.shop</a>
+                <button class="copy-btn" onclick="copyLink('https://inspiration.stationerycrafts.shop/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://cdn.postsupport.co/" target="_blank">cdn.postsupport.co</a>
+                <button class="copy-btn" onclick="copyLink('https://cdn.postsupport.co/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://content.postsupport.co/" target="_blank">content.postsupport.co</a>
+                <button class="copy-btn" onclick="copyLink('https://content.postsupport.co/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://blog.chirality.forum/" target="_blank">blog.chirality.forum</a>
+                <button class="copy-btn" onclick="copyLink('https://blog.chirality.forum/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» BOLT PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://bootnbo.baselinux.net/" target="_blank">bootnbo.baselinux.net</a>
+                <button class="copy-btn" onclick="copyLink('https://bootnbo.baselinux.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirbolt.baselinux.net/" target="_blank">nirbolt.baselinux.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbolt.baselinux.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nirbyteproxbolt.baselinux.net/" target="_blank">nirbyteproxbolt.baselinux.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nirbyteproxbolt.baselinux.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://solmariknein.baselinux.net/" target="_blank">solmariknein.baselinux.net</a>
+                <button class="copy-btn" onclick="copyLink('https://solmariknein.baselinux.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://soulmanib.baselinux.net/" target="_blank">soulmanib.baselinux.net</a>
+                <button class="copy-btn" onclick="copyLink('https://soulmanib.baselinux.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://coolmanbartx.justlearning.net/" target="_blank">coolmanbartx.justlearning.net</a>
+                <button class="copy-btn" onclick="copyLink('https://coolmanbartx.justlearning.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nxmevip.justlearning.net/" target="_blank">nxmevip.justlearning.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nxmevip.justlearning.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://saugatproxm.justlearning.net/" target="_blank">saugatproxm.justlearning.net</a>
+                <button class="copy-btn" onclick="copyLink('https://saugatproxm.justlearning.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://solgorknh.justlearning.net/" target="_blank">solgorknh.justlearning.net</a>
+                <button class="copy-btn" onclick="copyLink('https://solgorknh.justlearning.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://yangglin.justlearning.net/" target="_blank">yangglin.justlearning.net</a>
+                <button class="copy-btn" onclick="copyLink('https://yangglin.justlearning.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dylkffdoca.klockars.com/" target="_blank">dylkffdoca.klockars.com</a>
+                <button class="copy-btn" onclick="copyLink('https://dylkffdoca.klockars.com/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://orxwaicjss.laboratoriosdavis.cl/" target="_blank">orxwaicjss.laboratoriosdavis.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://orxwaicjss.laboratoriosdavis.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://lvpqirhbat.castroyasociados.cl/" target="_blank">lvpqirhbat.castroyasociados.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://lvpqirhbat.castroyasociados.cl/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">» DOGE PROXY LINKS «</div>
+        <div class="link-grid">
+            <div class="link-item">
+                <a href="https://dilpane.strangled.net/" target="_blank">dilpane.strangled.net</a>
+                <button class="copy-btn" onclick="copyLink('https://dilpane.strangled.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dogebynirmg.strangled.net/" target="_blank">dogebynirmg.strangled.net</a>
+                <button class="copy-btn" onclick="copyLink('https://dogebynirmg.strangled.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dogenirb.strangled.net/" target="_blank">dogenirb.strangled.net</a>
+                <button class="copy-btn" onclick="copyLink('https://dogenirb.strangled.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://mandepa.strangled.net/" target="_blank">mandepa.strangled.net</a>
+                <button class="copy-btn" onclick="copyLink('https://mandepa.strangled.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://nsnvipro.strangled.net/" target="_blank">nsnvipro.strangled.net</a>
+                <button class="copy-btn" onclick="copyLink('https://nsnvipro.strangled.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://bynirbytes.thehomeserver.net/" target="_blank">bynirbytes.thehomeserver.net</a>
+                <button class="copy-btn" onclick="copyLink('https://bynirbytes.thehomeserver.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://dogebnmx.thehomeserver.net/" target="_blank">dogebnmx.thehomeserver.net</a>
+                <button class="copy-btn" onclick="copyLink('https://dogebnmx.thehomeserver.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://mvpero.thehomeserver.net/" target="_blank">mvpero.thehomeserver.net</a>
+                <button class="copy-btn" onclick="copyLink('https://mvpero.thehomeserver.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://shivamen.thehomeserver.net/" target="_blank">shivamen.thehomeserver.net</a>
+                <button class="copy-btn" onclick="copyLink('https://shivamen.thehomeserver.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://summerprox.thehomeserver.net/" target="_blank">summerprox.thehomeserver.net</a>
+                <button class="copy-btn" onclick="copyLink('https://summerprox.thehomeserver.net/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://ryanchennotgay.trustmi.cl/" target="_blank">ryanchennotgay.trustmi.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://ryanchennotgay.trustmi.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://illegals-in-my-yard.trustmi.cl/" target="_blank">illegals-in-my-yard.trustmi.cl</a>
+                <button class="copy-btn" onclick="copyLink('https://illegals-in-my-yard.trustmi.cl/')">COPY</button>
+            </div>
+            <div class="link-item">
+                <a href="https://doge.myclarevision.com/" target="_blank">doge.myclarevision.com</a>
+                <button class="copy-btn" onclick="copyLink('https://doge.myclarevision.com/')">COPY</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="footer">
+        <div>PROXY_TERMINAL v2.1 | TOTAL LINKS: <span id="linkCount">85</span> | ENCRYPTION: AES-256</div>
+        <div>ACCESS GRANTED - MAINTAIN OPERATIONAL SECURITY</div>
+    </div>
+
+    <div class="status-bar">
+        <div>STATUS: <span class="blink">ACTIVE</span></div>
+        <div>CONNECTIONS: SECURE</div>
+        <div>LAST UPDATE: <span id="currentTime"></span></div>
+    </div>
+
+    <script>
+        // Matrix rain effect
+        function createMatrixRain() {
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            const matrixBg = document.getElementById('matrixBg');
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + 'vw';
+                char.style.animationDelay = Math.random() * 10 + 's';
+                char.style.animationDuration = (Math.random() * 15 + 5) + 's';
+                matrixBg.appendChild(char);
+            }
+        }
+
+        // Copy link function
+        function copyLink(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                const notification = document.getElementById('notification');
+                notification.classList.add('show');
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        // Count links
+        function countLinks() {
+            const links = document.querySelectorAll('.link-item').length;
+            document.getElementById('linkCount').textContent = links;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            createMatrixRain();
+            updateTime();
+            countLinks();
+            setInterval(updateTime, 1000);
+        });
+
+        // Add typing effect to terminal
+        document.addEventListener('DOMContentLoaded', () => {
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes typing {
+                    from { width: 0; }
+                    to { width: 100%; }
+                }
+                .section-title {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+                }
+                
+                @keyframes blink-caret {
+                    from, to { border-color: transparent; }
+                    50% { border-color: #00ff00; }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Add glitch effect on hover
+        document.addEventListener('mouseover', (e) => {
+            if (e.target.classList.contains('link-item')) {
+                const original = e.target.textContent;
+                const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+                let glitched = '';
+                
+                for (let i = 0; i < Math.min(3, original.length); i++) {
+                    const randomIndex = Math.floor(Math.random() * original.length);
+                    glitched = original.substring(0, randomIndex) + 
+                              glitchChars[Math.floor(Math.random() * glitchChars.length)] + 
+                              original.substring(randomIndex + 1);
+                }
+                
+                e.target.style.filter = 'hue-rotate(90deg)';
+                setTimeout(() => {
+                    e.target.style.filter = 'none';
+                }, 100);
+            }
+        });
+
+        // Konami code easter egg
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.code);
+            if (konamiCode.length > konamiSequence.length) {
+                konamiCode.shift();
+            }
+            
+            if (JSON.stringify(konamiCode) === JSON.stringify(konamiSequence)) {
+                document.body.style.animation = 'hue-rotate 2s linear infinite';
+                setTimeout(() => {
+                    document.body.style.animation = 'none';
+                }, 5000);
+                
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMeES');
+            }
+        });
+    </script>
+</body>
+    <script>
+        function exitToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // ESC key to exit
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                exitToHome();
+            }
+        });
+    </script>
+</html>

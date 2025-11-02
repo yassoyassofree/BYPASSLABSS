@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ixl</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+
+<!-- PWA Meta Tags -->
+<meta name="theme-color" content="#00ff41" />
+<meta name="background-color" content="#181818" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Eclipse Hub" />
+<meta name="msapplication-TileColor" content="#181818" />
+
+<!-- Icons -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiBmaWxsPSIjMTgxODE4Ii8+CjxwYXRoIGQ9Ik05NiAxNDRDNzMuOTA4NiAxNDQgNTYgMTI2LjA5MSA1NiA5NkM1NiA2NS45MDg2IDczLjkwODYgNDggOTYgNDhDMTE4LjA5MSA0OCAxMzYgNjUuOTA4NiAxMzYgOTZDMTM2IDEyNi4wOTEgMTE4LjA5MSAxNDQgOTYgMTQ0WiIgZmlsbD0iIzAwRkQ0MSIvPjwvc3ZnPgo=" />
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&display=swap');
+
+:root { 
+  --bg:#181818; 
+  --glow:#00ff41; 
+  --danger:#ff4141; 
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--glow);
+  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  overflow-x: hidden;
+}
+
+/* ============ LOGIN PAGE STYLES ============ */
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  max-width: 500px;
+  width: 100%;
+  z-index: 10;
+}
+
+.hacker-text {
+  font-size: 2.2em;
+  letter-spacing: 2px;
+  text-shadow: 0 0 8px var(--glow);
+  white-space: pre;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.cursor {
+  display: inline-block;
+  width: 1ch;
+  background: var(--glow);
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,50% { opacity: 1; }
+  51%,100% { opacity: 0; }
+}
+
+.panel {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.input {
+  background: var(--bg);
+  color: var(--glow);
+  border: 2px solid var(--glow);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 1.05em;
+  outline: none;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+.btn {
+  background: var(--bg);
+  color: var(--glow);
+  border: 2px solid var(--glow);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 1em;
+  cursor: pointer;
+  margin-top: 10px;
+  box-shadow: 0 0 8px rgba(0,255,65,0.08);
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  background: var(--glow);
+  color: var(--bg);
+}
+
+.error {
+  color: var(--danger);
+  display: none;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.greeting {
+  font-size: 1.2em;
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* ============ HOME PAGE STYLES ============ */
+
+.home-wrapper {
+  display: none;
+  width: 100%;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #0a0a0a;
+  overflow-y: auto;
+}
+
+.matrix-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.08;
+}
+
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(transparent 50%, rgba(0, 255, 65, 0.03) 50%);
+  background-size: 100% 4px;
+  animation: scanline 0.1s linear infinite;
+  pointer-events: none;
+  z-index: 3;
+}
+
+@keyframes scanline {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 4px; }
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.02) 0%, transparent 70%);
+}
+
+.terminal-header {
+  width: 100%;
+  max-width: 1000px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 2px solid #00ff41;
+  border-bottom: none;
+  padding: 20px 30px;
+  margin-top: 20px;
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.3), inset 0 0 30px rgba(0, 255, 65, 0.1);
+}
+
+.system-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.status-indicator {
+  color: #4ecdc4;
+}
+
+.terminal-title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 0 15px #00ff41;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  animation: glitch 4s infinite;
+}
+
+.subtitle {
+  font-size: 14px;
+  text-align: center;
+  opacity: 0.7;
+  color: #ff6b6b;
+}
+
+.welcome-container {
+  width: 100%;
+  max-width: 1000px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #00ff41;
+  border-top: none;
+  padding: 50px;
+  box-shadow: 0 0 40px rgba(0, 255, 65, 0.4), inset 0 0 40px rgba(0, 255, 65, 0.1);
+}
+
+.command-line {
+  margin-bottom: 30px;
+  font-size: 14px;
+  opacity: 0.8;
+  padding: 15px 0;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+}
+
+.prompt {
+  color: #ff6b6b;
+}
+
+h1 {
+  color: #00ff41;
+  margin-bottom: 30px;
+  font-size: 28px;
+  text-align: center;
+  text-shadow: 0 0 20px #00ff41;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.welcome-message {
+  background: rgba(0, 255, 65, 0.05);
+  border-left: 4px solid #00ff41;
+  padding: 20px;
+  margin: 30px 0;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.welcome-message::before {
+  content: '> ';
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.button-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-top: 40px;
+}
+
+.hack-button {
+  background: linear-gradient(45deg, rgba(0, 0, 0, 0.8), rgba(0, 255, 65, 0.1));
+  border: 2px solid #00ff41;
+  color: #00ff41;
+  padding: 20px 25px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  overflow: hidden;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hack-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.3), transparent);
+  transition: left 0.6s;
+}
+
+.hack-button:hover::before {
+  left: 100%;
+}
+
+.hack-button:hover {
+  background: linear-gradient(45deg, rgba(0, 255, 65, 0.1), rgba(0, 0, 0, 0.8));
+  box-shadow: 0 0 30px rgba(0, 255, 65, 0.6), inset 0 0 30px rgba(0, 255, 65, 0.2);
+  transform: translateY(-3px);
+  text-shadow: 0 0 10px #00ff41;
+}
+
+.cheats-btn { border-color: #ff6b6b; color: #ff6b6b; }
+
+.cheats-btn:hover { 
+  border-color: #ff6b6b; 
+  color: #ff6b6b;
+  box-shadow: 0 0 30px rgba(255, 107, 107, 0.6), inset 0 0 30px rgba(255, 107, 107, 0.2);
+  text-shadow: 0 0 10px #ff6b6b;
+}
+
+.unblockers-btn { border-color: #4ecdc4; color: #4ecdc4; }
+
+.unblockers-btn:hover { 
+  border-color: #4ecdc4; 
+  color: #4ecdc4;
+  box-shadow: 0 0 30px rgba(78, 205, 196, 0.6), inset 0 0 30px rgba(78, 205, 196, 0.2);
+  text-shadow: 0 0 10px #4ecdc4;
+}
+
+.soundboard-btn { border-color: #ffd93d; color: #ffd93d; }
+
+.soundboard-btn:hover { 
+  border-color: #ffd93d; 
+  color: #ffd93d;
+  box-shadow: 0 0 30px rgba(255, 217, 61, 0.6), inset 0 0 30px rgba(255, 217, 61, 0.2);
+  text-shadow: 0 0 10px #ffd93d;
+}
+
+.chatgpt-btn { border-color: #a8e6cf; color: #a8e6cf; }
+
+.chatgpt-btn:hover { 
+  border-color: #a8e6cf; 
+  color: #a8e6cf;
+  box-shadow: 0 0 30px rgba(168, 230, 207, 0.6), inset 0 0 30px rgba(168, 230, 207, 0.2);
+  text-shadow: 0 0 10px #a8e6cf;
+}
+
+.btn-icon {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  border-top: 1px solid #00ff41;
+  padding: 12px 25px;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.secret-hint {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  color: #ff6b6b;
+  padding: 8px 15px;
+  font-size: 11px;
+  opacity: 0.6;
+  z-index: 6;
+  animation: pulseSecret 2s infinite;
+}
+
+@keyframes pulseSecret {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes glitch {
+  0%, 100% { 
+    transform: translate(0);
+    text-shadow: 0 0 15px #00ff41;
+  }
+  20% { 
+    transform: translate(-1px, 1px);
+    text-shadow: 2px 0 #ff6b6b, -2px 0 #4ecdc4, 0 0 20px #00ff41;
+  }
+  40% { 
+    transform: translate(-1px, -1px);
+    text-shadow: 0 0 15px #00ff41;
+  }
+  60% { 
+    transform: translate(1px, 1px);
+    text-shadow: 2px 0 #4ecdc4, -2px 0 #ff6b6b, 0 0 20px #00ff41;
+  }
+  80% { 
+    transform: translate(1px, -1px);
+    text-shadow: 0 0 15px #00ff41;
+  }
+}
+
+.typing {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid #00ff41;
+  animation: typing 3s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0 }
+  to { width: 100% }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent }
+  50% { border-color: #00ff41 }
+}
+
+/* ============ ADMIN PANEL STYLES ============ */
+
+.admin-panel-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 800px;
+  height: 80%;
+  max-height: 600px;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid var(--glow);
+  box-shadow: 0 0 50px rgba(0, 255, 65, 0.5);
+  z-index: 100;
+  display: none;
+  flex-direction: column;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--glow);
+}
+
+.admin-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border-bottom: 1px solid var(--glow);
+}
+
+.admin-panel-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  text-shadow: 0 0 10px var(--glow);
+}
+
+.admin-panel-close-btn {
+  background: none;
+  border: none;
+  color: var(--glow);
+  font-size: 1.8em;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.admin-panel-close-btn:hover {
+  color: var(--danger);
+}
+
+.admin-panel-content {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-output {
+  flex-grow: 1;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(0, 255, 65, 0.3);
+  padding: 15px;
+  margin-bottom: 15px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-y: auto;
+  font-size: 0.9em;
+  line-height: 1.4;
+  color: var(--glow);
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.2);
+}
+
+.admin-input-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  transition: all 0.3s ease;
+}
+
+.admin-input-area.hidden {
+  display: none !important;
+}
+
+.admin-prompt {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.admin-command-input {
+  flex-grow: 1;
+  background: var(--bg);
+  color: var(--glow);
+  border: 1px solid var(--glow);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 1em;
+  outline: none;
+}
+
+.admin-command-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-submit-btn {
+  padding: 8px 15px;
+  font-size: 0.9em;
+}
+
+@media(max-width:768px) {
+  .hacker-text { font-size: 1.8em; }
+  .login-container { gap: 12px; }
+  .welcome-container { padding: 30px 20px; margin: 0 10px; }
+  .terminal-header { padding: 15px 20px; margin: 0 10px; margin-top: 30px; }
+  .button-container { grid-template-columns: 1fr; gap: 20px; }
+  h1 { font-size: 22px; }
+  .secret-hint { top: 10px; right: 10px; padding: 6px 10px; font-size: 10px; }
+  .admin-panel-container {
+    width: 95%;
+    height: 90%;
+  }
+  .admin-panel-header { padding: 8px 15px; }
+  .admin-panel-title { font-size: 1em; }
+  .admin-panel-close-btn { font-size: 1.5em; }
+  .admin-panel-content { padding: 15px; }
+  .admin-output { font-size: 0.8em; padding: 10px; }
+  .admin-command-input { font-size: 0.9em; padding: 6px 8px; }
+  .admin-submit-btn { padding: 6px 12px; font-size: 0.8em; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN PAGE ============ -->
+<div class="login-container" id="loginPage">
+  <div class="hacker-text" id="hackerText"></div>
+
+  <div id="usernamePanel" class="panel">
+    <label for="usernameInput" style="font-size:1.1em;margin-bottom:8px;">Enter your username:</label>
+    <input id="usernameInput" class="input" type="text" autocomplete="username" placeholder="Enter your username" />
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button id="submitUsername" class="btn">Continue</button>
+    </div>
+    <div id="usernameError" class="error">Please enter a valid username</div>
+  </div>
+
+  <div id="passwordPanel" class="panel" style="display:none;">
+    <div id="greeting" class="greeting" style="margin-bottom: 15px;">Welcome, <span id="usernameDisplay"></span></div>
+    <label for="passwordInput" style="font-size:1.1em;margin-bottom:8px;">Enter password:</label>
+    <div style="position:relative;width:100%;max-width:300px;">
+      <input id="passwordInput" class="input" type="password" autocomplete="current-password" />
+      <button id="togglePassword" type="button" style="position:absolute; right:8px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--glow); font-size:1.1em; cursor:pointer;">
+        <i class="fa-regular fa-eye"></i>
+      </button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;justify-content:center;">
+      <button id="submitPassword" class="btn">Login</button>
+      <button id="crackCodeBtn" class="btn" style="border-style:dashed;">Crack Code</button>
+    </div>
+    <div id="passwordError" class="error">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ============ HOME PAGE ============ -->
+<div class="home-wrapper" id="homePage">
+  <canvas class="matrix-bg" id="matrixCanvas"></canvas>
+  <div class="scanlines"></div>
+  
+
+
+  <div class="content-wrapper">
+    <div class="terminal-header">
+      <div class="system-status">
+        <span><i class="fas fa-circle" style="color: #4ecdc4;"></i> SYSTEM ONLINE</span>
+        <span class="status-indicator">CONNECTION: SECURE</span>
+        <span><i class="fas fa-shield-alt"></i> FIREWALL: ACTIVE</span>
+      </div>
+      <div class="terminal-title">
+        [ BYPASS Labs CONTROL PANEL ]
+      </div>
+      <div class="subtitle">
+        ◄ ACCESS GRANTED - SELECT MODULE ►
+      </div>
+    </div>
+
+    <div class="welcome-container">
+      <div class="command-line">
+        <span class="prompt">root@nexus-control:~$</span> <span class="typing">ls -la /modules/available/</span>
+      </div>
+
+      <h1>◄ System Access Granted ►</h1>
+      
+      <div class="welcome-message" id="homeWelcomeMessage">
+        Welcome to the Eclipse Hub Control Panel. All systems are operational and ready for deployment. Select your desired module from the available options below.
+      </div>
+
+      <div class="button-container">
+        <button class="hack-button cheats-btn" onclick="initiateModule('unavalable.html')">
+          <i class="fas fa-terminal btn-icon"></i>
+          [ CHEATS.EXE ]
+        </button>
+        <button class="hack-button unblockers-btn" onclick="initiateModule('unblockers.html')">
+          <i class="fas fa-unlock-alt btn-icon"></i>
+          [ UNBLOCKERS.SYS ]
+        </button>
+        <button class="hack-button soundboard-btn" onclick="initiateModule('sound_board.html')">
+          <i class="fas fa-volume-up btn-icon"></i>
+          [ SOUNDBOARD.APP ]
+        </button>
+     
+        <button class="hack-button unblockers-btn" onclick="initiateModule('games_Hub.html')">
+          <i class="fas fa-gamepad btn-icon"></i>
+          [ GAMES.HUB ]
+        </button>
+        <button class="hack-button unblockers-btn" onclick="initiateModule('game.html')">
+          <i class="fas fa-gamepad btn-icon"></i>
+          [ Shooter.HUB ]
+        </button>
+        <button class="hack-button unblockers-btn" onclick="initiateModule('policy.html')">
+          <i class="fas fa-gamepad btn-icon"></i>
+          [ policy.HUB ]
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <i class="fas fa-microchip"></i>
+      <span>CPU: 47%</span>
+    </div>
+    <div class="status-item">
+      <i class="fas fa-memory"></i>
+      <span>RAM: 2.1GB</span>
+    </div>
+    <div class="status-item">
+      <i class="fas fa-clock"></i>
+      <span id="currentTime"></span>
+    </div>
+    <div class="status-item">
+      <i class="fas fa-user-shield"></i>
+      <span>USER: <span id="statusUsername">ROOT</span></span>
+    </div>
+    <div class="status-item" id="connectionStatus">
+      <i class="fas fa-wifi"></i>
+      <span>ONLINE</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN PANEL HTML ============ -->
+<div id="adminPanelContainer" class="admin-panel-container">
+  <div class="admin-panel-header">
+    <span class="admin-panel-title">[ ADMIN CONSOLE ]</span>
+    <button id="closeAdminPanel" class="admin-panel-close-btn">&times;</button>
+  </div>
+  <div class="admin-panel-content">
+    <pre id="adminOutput" class="admin-output"></pre>
+    <div class="admin-input-area" id="adminInputArea">
+      <span class="admin-prompt">admin@console:~$</span>
+      <input type="text" id="adminCommandInput" class="admin-command-input" placeholder="Enter command..." />
+      <button id="submitAdminCommand" class="btn admin-submit-btn">Execute</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/10.7.1/firebase-firestore-compat.min.js"></script>
+<script src="policySystem.js"></script>
+<script src="authGuard.js"></script>
+<script>
+let firebaseEnabled = false;
+let db = null;
+let currentUsername = '';
+let isUserLoggedIn = false;
+let adminPanelOpen = false;
+
+// ===== OPTIMIZED USER LOOKUP MAPS =====
+const userLookup = {
+  byLower: new Map(),
+  byActual: new Map(),
+  
+  init(admins, users) {
+    this.byLower.clear();
+    this.byActual.clear();
+    
+    for (let admin of admins) {
+      this.byLower.set(admin.toLowerCase(), admin);
+      this.byActual.set(admin, { type: 'admin' });
+    }
+    
+    for (let user of users) {
+      this.byLower.set(user.toLowerCase(), user);
+      this.byActual.set(user, { type: 'user' });
+    }
+  },
+  
+  find(username) {
+    return this.byLower.get(username.toLowerCase());
+  },
+  
+  getType(username) {
+    const actual = this.find(username);
+    if (!actual) return null;
+    return this.byActual.get(actual)?.type;
+  }
+};
+
+const inMemoryStorage = {
+  users: new Set(['yassinyassinfree', 'mody', 'yaamen','A D H A M Y','EYAD A','ABDO','MOHAMED','HASSONY','TEST','admin','faris', 'kimo', 'yassin_yasser', 'anas','farouk']),
+  admins: new Set(['yassinyassinfree','mody','admin','HASSONY','farouk','yassinsh']),
+  banned: new Set(['MOHAMED']),
+  userspassword: new Map([
+    ['yassinyassinfree', 'yassinyassinking'],
+    ['mody', '1mody'],
+    ['yaamen', 'deadpool'],
+    ['admin', 'adminunknown'],
+    ['A D H A M Y', 'adhamy'],
+    ['EYAD A', 'eyada'],
+    ['ABDO', 'abdo'],
+    ['MOHAMED', 'mohamed'],
+    ['HASSONY', 'hassony'],
+    ['TEST', 'test'],
+    ['faris', 'faris'],
+    ['kimo','kimo_Ehab'],
+    ['farouk','farfar'],
+    ['yassin_yasser','yassin_yasser'],
+    ['anas','anas1'],
+    ['yassinsh','1234'],
+    ['magdyyy','magdy1']
+  ]),
+  adminsPasswords: new Map([
+    ['mody', '1mody-admin'],
+    ['yassinyassinfree', 'yassinyassin'],
+    ['admin', 'admin-admin'],
+    ['HASSONY', 'hassony'],
+    ['farouk','farouk-admin'],
+    ['yassinsh','admin1234'],
+  ]),
+  protectedpeople: new Set(['mody', 'yassinyassinfree', 'admin', 'HASSONY', 'farouk', 'yassinsh']),
+  noAlertUsers: new Set(JSON.parse(localStorage.getItem('noAlertUsers') || '[]')),
+  userAlerts: new Map(),
+  exceptions: new Map(),
+  violations: new Map(),
+};
+
+userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAMavguQ-mxKBiThJMJ2M0DH0ORecNAnag",
+  authDomain: "bypass-cf433.firebaseapp.com",
+  projectId: "bypass-cf433",
+  storageBucket: "bypass-cf433.firebasestorage.app",
+  messagingSenderId: "180606413279",
+  appId: "1:180606413279:web:64c33094256e559d153c6a",
+  measurementId: "G-47LV257VB3"
+};
+
+async function initializeFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    const settings = { cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED, merge: true };
+    db.settings(settings);
+    try {
+      await db.enablePersistence({ synchronizeTabs: true });
+      console.log('✓ Offline persistence enabled');
+    } catch (err) {
+      if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') throw err;
+    }
+    const testPromise = db.collection('_test').limit(1).get();
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000));
+    await Promise.race([testPromise, timeoutPromise]);
+    firebaseEnabled = true;
+    console.log('✓ Firebase connected');
+    updateConnectionStatus(true);
+  } catch (err) {
+    console.warn('⚠ Firebase unavailable:', err.message);
+    firebaseEnabled = false;
+    db = null;
+    updateConnectionStatus(false);
+  }
+}
+
+function updateConnectionStatus(isConnected) {
+  const statusEl = document.getElementById('connectionStatus');
+  if (statusEl) {
+    if (isConnected) {
+      statusEl.innerHTML = '<i class="fas fa-wifi"></i><span>ONLINE (Firebase)</span>';
+      statusEl.style.color = '#00ff41';
+    } else {
+      statusEl.innerHTML = '<i class="fas fa-wifi"></i><span>LOCAL MODE</span>';
+      statusEl.style.color = '#ffd93d';
+    }
+  }
+}
+
+initializeFirebase();
+
+const hackerText = document.getElementById('hackerText');
+const passwordPanel = document.getElementById('passwordPanel');
+const usernamePanel = document.getElementById('usernamePanel');
+const passwordInput = document.getElementById('passwordInput');
+const usernameInput = document.getElementById('usernameInput');
+
+// Check if user has active session (24 hour login)
+function checkExistingSession() {
+  const loginActive = localStorage.getItem('loginActive');
+  const expiryTime = localStorage.getItem('sessionExpiryTime');
+  const username = localStorage.getItem('currentUsername');
+  
+  if (loginActive === 'true' && expiryTime && username) {
+    const currentTime = new Date().getTime();
+    if (currentTime < parseInt(expiryTime)) {
+      currentUsername = username;
+      isUserLoggedIn = true;
+      transitionToHomePage();
+      return true;
+    } else {
+      // Session expired, clear it
+      localStorage.removeItem('currentUsername');
+      localStorage.removeItem('sessionStartTime');
+      localStorage.removeItem('sessionExpiryTime');
+      localStorage.removeItem('loginActive');
+    }
+  }
+  return false;
+}
+
+// Check for existing session on page load
+window.addEventListener('load', () => {
+  if (checkExistingSession()) {
+    // Session is valid, skip login
+  }
+});
+
+const lines = ["welcome","to BYPASS LABS only website"];
+let lineIdx=0, chIdx=0;
+function typeLine() {
+  if (lineIdx<lines.length) {
+    if (chIdx<=lines[lineIdx].length) {
+      hackerText.innerHTML = lines.slice(0, lineIdx).join('\n') + (lineIdx>0 ? '\n':'') + lines[lineIdx].slice(0,chIdx) + '<span class="cursor"></span>';
+      chIdx++;
+      setTimeout(typeLine,70);
+    } else {
+      chIdx=0; lineIdx++;
+      setTimeout(typeLine,500);
+    }
+  } else {
+    hackerText.innerHTML = lines.join('\n');
+  }
+}
+typeLine();
+
+hackerText.addEventListener('click', () => {
+  hackerText.style.display = 'none';
+  usernamePanel.style.display = 'flex';
+  usernameInput.focus();
+});
+
+document.getElementById('togglePassword').onclick = function() {
+  const icon = this.querySelector('i');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    passwordInput.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+};
+
+async function handleUsernameSubmit(event) {
+  if (event) event.preventDefault();
+  const username = usernameInput.value.trim();
+  if (!username) {
+    document.getElementById('usernameError').style.display = 'block';
+    return;
+  }
+  
+  const userStatus = await checkUserStatusWithPassword(username);
+  if (!userStatus.allowed && !userStatus.needsPassword) {
+    document.getElementById('usernameError').textContent = userStatus.message || 'User not found';
+    document.getElementById('usernameError').style.display = 'block';
+    return;
+  }
+  
+  currentUsername = userLookup.find(username);
+  document.getElementById('usernameDisplay').textContent = currentUsername;
+  usernamePanel.style.display = 'none';
+  passwordPanel.style.display = 'flex';
+  passwordInput.value = '';
+  passwordInput.focus();
+  document.getElementById('usernameError').style.display = 'none';
+}
+
+document.getElementById('submitUsername').addEventListener('click', handleUsernameSubmit);
+usernameInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleUsernameSubmit();
+  else document.getElementById('usernameError').style.display = 'none';
+});
+
+async function handlePasswordSubmit() {
+  const password = passwordInput.value;
+  const errorElement = document.getElementById('passwordError');
+  
+  if (!currentUsername) {
+    errorElement.textContent = 'Session expired. Refresh page.';
+    errorElement.style.display = 'block';
+    return;
+  }
+
+  const userStatus = await checkUserStatusWithPassword(currentUsername, password);
+  if (userStatus.allowed) {
+    isUserLoggedIn = true;
+    
+    // Save login session for 24 hours
+    const loginTime = new Date().getTime();
+    const expiryTime = loginTime + (24 * 60 * 60 * 1000); // 24 hours
+    
+    localStorage.setItem('currentUsername', currentUsername);
+    localStorage.setItem('sessionStartTime', loginTime.toString());
+    localStorage.setItem('sessionExpiryTime', expiryTime.toString());
+    localStorage.setItem('loginActive', 'true');
+    
+    sessionStorage.setItem('currentUsername', currentUsername);
+    sessionStorage.setItem('sessionStartTime', loginTime.toString());
+    
+    passwordInput.value = '';
+    errorElement.style.display = 'none';
+    transitionToHomePage();
+  } else {
+    errorElement.textContent = userStatus.message || 'Invalid password';
+    errorElement.style.display = 'block';
+  }
+}
+
+document.getElementById('submitPassword').addEventListener('click', handlePasswordSubmit);
+document.getElementById('passwordInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handlePasswordSubmit();
+});
+document.getElementById('crackCodeBtn').onclick = () => alert('This feature is currently disabled.');
+
+function transitionToHomePage() {
+  const loginPage = document.getElementById('loginPage');
+  const homePage = document.getElementById('homePage');
+  loginPage.style.transition = 'opacity 0.5s ease';
+  loginPage.style.opacity = '0';
+  
+  setTimeout(() => {
+    loginPage.style.display = 'none';
+    homePage.style.display = 'block';
+    homePage.style.opacity = '0';
+    document.getElementById('homeWelcomeMessage').innerHTML = `Welcome back, <strong>${currentUsername}</strong>! All systems are operational and ready for deployment. Select your desired module from the available options below.`;
+    document.getElementById('statusUsername').textContent = currentUsername.toUpperCase();
+    initMatrixRain();
+    updateTime();
+    setInterval(updateTime, 1000);
+    setTimeout(() => {
+      homePage.style.transition = 'opacity 0.8s ease';
+      homePage.style.opacity = '1';
+    }, 100);
+  }, 500);
+}
+
+async function checkUserStatusWithPassword(username, password=null) {
+  const actualUsername = userLookup.find(username);
+  
+  if (!actualUsername) {
+    return { allowed: false, message: 'User not found' };
+  }
+
+  const storedPassword = inMemoryStorage.userspassword.get(actualUsername);
+  
+  if (storedPassword) {
+    if (!password) return { allowed: false, needsPassword: true };
+    if (password !== storedPassword) return { allowed: false, message: 'Invalid password' };
+  }
+
+  if (inMemoryStorage.banned.has(actualUsername)) {
+    return { allowed: false, message: 'You are banned' };
+  }
+
+  return { allowed: true };
+}
+
+function initMatrixRain() {
+  const canvas = document.getElementById('matrixCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+  const matrixArray = matrix.split("");
+  const fontSize = 12;
+  const columns = canvas.width / fontSize;
+  const drops = [];
+  for (let x = 0; x < columns; x++) drops[x] = 1;
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff41';
+    ctx.font = fontSize + 'px JetBrains Mono';
+    for (let i = 0; i < drops.length; i++) {
+      const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+  setInterval(drawMatrix, 40);
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
+
+function updateTime() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString('en-US', {hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'});
+  const el = document.getElementById('currentTime');
+  if (el) el.textContent = timeString;
+}
+
+function saveUserActivity(module) {
+  if (!currentUsername) return;
+  const activity = { module: module, timestamp: new Date().toISOString() };
+  if (firebaseEnabled && db) {
+    const userActivityRef = db.collection('user_activity').doc(currentUsername);
+    userActivityRef.get().then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+        const modules = data.modules || [];
+        modules.push(activity);
+        userActivityRef.update({modules: modules});
+      } else {
+        userActivityRef.set({modules: [activity]});
+      }
+    }).catch(err => console.error('Error saving:', err));
+  } else {
+    const key = 'user_activity_' + currentUsername;
+    let activities = JSON.parse(localStorage.getItem(key) || '[]');
+    activities.push(activity);
+    localStorage.setItem(key, JSON.stringify(activities));
+  }
+}
+
+function initiateModule(target) {
+  saveUserActivity(target);
+  const button = event.target.closest('button');
+  button.innerHTML = '<i class="fas fa-spinner fa-spin btn-icon"></i>[ INITIALIZING... ]';
+  button.style.pointerEvents = 'none';
+  setTimeout(() => {
+    button.innerHTML = '<i class="fas fa-check btn-icon"></i>[ MODULE LOADED ]';
+    setTimeout(() => {
+      button.innerHTML = '<i class="fas fa-rocket btn-icon"></i>[ LAUNCHING... ]';
+      setTimeout(() => { window.location.href = target; }, 800);
+    }, 1000);
+  }, 1200);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.altKey && e.key.toLowerCase() === 'a') {
+    e.preventDefault();
+    openAdminPanel();
+  }
+});
+
+const adminPanelContainer = document.getElementById('adminPanelContainer');
+const adminOutput = document.getElementById('adminOutput');
+const adminCommandInput = document.getElementById('adminCommandInput');
+const submitAdminCommandBtn = document.getElementById('submitAdminCommand');
+const closeAdminPanelBtn = document.getElementById('closeAdminPanel');
+const adminInputArea = document.getElementById('adminInputArea');
+
+let commandSuggestions = [
+  { cmd: '/help', desc: 'Show command guide' },
+  { cmd: '/ban USERNAME', desc: 'Ban a user' },
+  { cmd: '/unban USERNAME', desc: 'Unban a user' },
+  { cmd: '/change username OLD_USERNAME NEW_USERNAME', desc: 'Change username' },
+  { cmd: '/change password USERNAME NEW_PASSWORD', desc: 'Change password' },
+  { cmd: '/list', desc: 'Show all users & alerts' },
+  { cmd: '/list violations', desc: 'Show all violations' },
+  { cmd: '/status', desc: 'Show system status' },
+  { cmd: '/show password USERNAME', desc: 'Show user password' },
+  { cmd: '/show violations USERNAME', desc: 'Show user violations' },
+  { cmd: '/add USERNAME PASSWORD', desc: 'Add new user' },
+  { cmd: '/add admin USERNAME PASSWORD', desc: 'Add new admin' },
+  { cmd: '/add alert USERNAME', desc: 'Enable default alert' },
+  { cmd: '/add alert USERNAME [message] {strikes}', desc: 'Set custom alert' },
+  { cmd: '/add exception USERNAME DAYS', desc: 'Add exception' },
+  { cmd: '/remove user USERNAME', desc: 'Remove user' },
+  { cmd: '/remove admin USERNAME', desc: 'Remove admin' },
+  { cmd: '/remove alert USERNAME', desc: 'Disable alerts' },
+  { cmd: '/remove exception USERNAME', desc: 'Remove exception' },
+  { cmd: '/protect USERNAME', desc: 'Protect user' },
+  { cmd: '/unprotect USERNAME', desc: 'Unprotect user' },
+  { cmd: '/history', desc: 'Your activity' },
+  { cmd: '/history USERNAME', desc: 'User activity' },
+  { cmd: '/clear violations USERNAME', desc: 'Clear violations' }
+];
+
+let suggestionsDropdown = null;
+
+function writeAdminOutput(message, clear = false) {
+  if (clear) adminOutput.textContent = '';
+  adminOutput.textContent += message + '\n';
+  adminOutput.scrollTop = adminOutput.scrollHeight;
+}
+
+function showCommandHelper() {
+  let helperMsg = '╔════════════════════════════════════════════╗\n';
+  helperMsg += '║       📋 ADMIN COMMAND HELPER 📋            ║\n';
+  helperMsg += '╚════════════════════════════════════════════╝\n\n';
+  
+  helperMsg += '👤 USER MANAGEMENT:\n';
+  helperMsg += '  /ban USERNAME\n';
+  helperMsg += '  /unban USERNAME\n';
+  helperMsg += '  /add USERNAME PASSWORD\n';
+  helperMsg += '  /add admin USERNAME PASSWORD\n';
+  helperMsg += '  /remove user USERNAME\n';
+  helperMsg += '  /remove admin USERNAME\n';
+  helperMsg += '  /protect USERNAME\n';
+  helperMsg += '  /unprotect USERNAME\n\n';
+  
+  helperMsg += '🔐 PASSWORD & USERNAME:\n';
+  helperMsg += '  /change username OLD_USERNAME NEW_USERNAME\n';
+  helperMsg += '  /change password USERNAME NEW_PASSWORD\n';
+  helperMsg += '  /show password USERNAME\n\n';
+  
+  helperMsg += '🚨 ALERT SYSTEM:\n';
+  helperMsg += '  /add alert USERNAME\n';
+  helperMsg += '  /add alert USERNAME [message] {strikes}\n';
+  helperMsg += '  /remove alert USERNAME\n\n';
+  
+  helperMsg += '📊 INFORMATION:\n';
+  helperMsg += '  /list\n';
+  helperMsg += '  /status\n';
+  helperMsg += '  /history\n';
+  helperMsg += '  /history USERNAME\n\n';
+  
+  helperMsg += '⚖️ VIOLATIONS:\n';
+  helperMsg += '  /show violations USERNAME\n';
+  helperMsg += '  /list violations\n';
+  helperMsg += '  /clear violations USERNAME\n\n';
+  
+  helperMsg += '⏰ EXCEPTIONS:\n';
+  helperMsg += '  /add exception USERNAME DAYS\n';
+  helperMsg += '  /remove exception USERNAME\n\n';
+  
+  helperMsg += '╔════════════════════════════════════════════╗\n';
+  helperMsg += '║  Start typing / to see suggestions         ║\n';
+  helperMsg += '║  Press TAB to autocomplete                 ║\n';
+  helperMsg += '╚════════════════════════════════════════════╝\n';
+  
+  writeAdminOutput(helperMsg);
+}
+
+function showSuggestions(input) {
+  if (!input.startsWith('/')) {
+    if (suggestionsDropdown) suggestionsDropdown.remove();
+    return;
+  }
+
+  const matches = commandSuggestions.filter(s => s.cmd.toLowerCase().startsWith(input.toLowerCase()));
+  
+  if (matches.length === 0) {
+    if (suggestionsDropdown) suggestionsDropdown.remove();
+    return;
+  }
+
+  if (!suggestionsDropdown) {
+    suggestionsDropdown = document.createElement('div');
+    suggestionsDropdown.style.cssText = `
+      position: absolute;
+      bottom: 50px;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.9);
+      border: 1px solid #00ff41;
+      border-radius: 4px;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 1000;
+    `;
+    adminInputArea.appendChild(suggestionsDropdown);
+  }
+
+  suggestionsDropdown.innerHTML = '';
+  
+  matches.slice(0, 5).forEach((match, idx) => {
+    const item = document.createElement('div');
+    item.style.cssText = `
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(0,255,65,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #00ff41;
+      font-size: 0.9em;
+    `;
+    item.innerHTML = `<strong>${match.cmd}</strong> <span style="color: #888; font-size: 0.85em;">→ ${match.desc}</span>`;
+    
+    item.addEventListener('click', () => {
+      adminCommandInput.value = match.cmd;
+      if (suggestionsDropdown) suggestionsDropdown.remove();
+      adminCommandInput.focus();
+    });
+    
+    item.addEventListener('mouseover', () => {
+      item.style.background = 'rgba(0,255,65,0.1)';
+    });
+    
+    item.addEventListener('mouseout', () => {
+      item.style.background = 'transparent';
+    });
+    
+    suggestionsDropdown.appendChild(item);
+  });
+}
+
+async function openAdminPanel() {
+  const username = prompt('Enter admin username:');
+  if (!username) return;
+  const password = prompt('Enter admin password:');
+  
+  let isValidAdmin = false;
+  if ((username === 'mody' && password === '1mody-admin') ||
+      (username === 'farouk' && password === 'farouk-admin') ||
+      (username === 'HASSONY' && password === 'hassony') ||
+      (username === 'admin' && password === 'admin-admin') ||
+      (username.toLowerCase() === 'yassinyassinfree' && password === 'yassinyassin')) {
+    isValidAdmin = true;
+  }
+  
+  if (!isValidAdmin) {
+    writeAdminOutput('[!] ACCESS DENIED - Invalid credentials', true);
+    adminPanelContainer.style.display = 'flex';
+    adminInputArea.classList.add('hidden');
+    setTimeout(() => { adminPanelContainer.style.display = 'none'; }, 2000);
+    return;
+  }
+
+  adminPanelContainer.style.display = 'flex';
+  adminInputArea.classList.remove('hidden');
+  adminOutput.textContent = '';
+  adminCommandInput.value = '';
+  adminCommandInput.focus();
+
+  writeAdminOutput(`╔════════════════════════════════════════════╗\n║  ADMIN CONTROL PANEL (${storageType})\n║  Type /help for guide | Start typing / for suggestions\n╚════════════════════════════════════════════╝\n`);
+
+  const executeAdminCommand = async () => {
+    const cmd = adminCommandInput.value.trim();
+    adminCommandInput.value = '';
+    if (suggestionsDropdown) suggestionsDropdown.remove();
+    writeAdminOutput(`\nadmin@console:~$ ${cmd}`);
+
+    if (!cmd || !cmd.startsWith('/')) {
+      writeAdminOutput('[!] Command must start with /');
+      return;
+    }
+    
+    const parts = cmd.slice(1).trim().split(/\s+/);
+    const action = parts[0].toLowerCase();
+
+    try {
+      switch(action) {
+        case 'help': showCommandHelper(); break;
+        case 'ban': banUser(parts[1]); break;
+        case 'unban': unbanUser(parts[1]); break;
+        case 'change':
+          if (parts[1] === 'username' && parts[2] && parts[3]) {
+            await changeUsername(parts[2], parts[3]);
+          } else if (parts[1] === 'password' && parts[2] && parts[3]) {
+            changePassword(parts[2], parts[3]);
+          } else {
+            writeAdminOutput('[!] Usage: /change username OLD NEW or /change password USER PASS');
+          }
+          break;
+        case 'list':
+          if (parts[1] === 'violations') {
+            listViolations();
+          } else {
+            listUsers();
+          }
+          break;
+        case 'status': showSystemStatus(); break;
+        case 'show':
+          if (parts[1] === 'password' && parts[2]) {
+            showPassword(parts[2]);
+          } else if (parts[1] === 'violations' && parts[2]) {
+            showViolations(parts[2]);
+          } else {
+            writeAdminOutput('[!] Usage: /show password USER or /show violations USER');
+          }
+          break;
+        case 'add':
+          if (parts.length === 4 && parts[1] === 'exception') {
+            addException(parts[2], parseInt(parts[3]));
+          } else if (parts[1] === 'alert') {
+            const remainingInput = cmd.slice(1).trim().substring(parts[0].length).trim().substring(parts[1].length).trim().substring(parts[2].length).trim();
+            addAlert(parts[2], remainingInput);
+          } else if (parts.length === 3 && parts[1] !== 'admin') {
+            await addUser(parts[1], parts[2]);
+          } else if (parts.length === 4 && parts[1] === 'admin') {
+            await addAdmin(parts[2], parts[3]);
+          } else {
+            writeAdminOutput('[!] Usage: /add USER PASS or /add admin USER PASS or /add alert USER [msg] {num}');
+          }
+          break;
+        case 'remove':
+          if (parts.length === 3 && parts[1] === 'exception') {
+            removeException(parts[2]);
+          } else if (parts.length === 3 && parts[1] === 'alert') {
+            removeAlert(parts[2]);
+          } else if (parts.length === 3 && parts[1] === 'user') {
+            await removeUser(parts[2]);
+          } else if (parts.length === 3 && parts[1] === 'admin') {
+            await removeAdmin(parts[2]);
+          } else {
+            writeAdminOutput('[!] Usage: /remove user/admin/alert/exception USERNAME');
+          }
+          break;
+        case 'protect':
+          if (parts[1]) {
+            protectUser(parts[1]);
+          } else {
+            writeAdminOutput('[!] Usage: /protect USERNAME');
+          }
+          break;
+        case 'unprotect':
+          if (parts[1]) {
+            unprotectUser(parts[1]);
+          } else {
+            writeAdminOutput('[!] Usage: /unprotect USERNAME');
+          }
+          break;
+        case 'history':
+          if (parts[1]) {
+            showUserHistory(parts[1]);
+          } else {
+            showUserHistory(currentUsername);
+          }
+          break;
+        case 'clear':
+          if (parts.length === 3 && parts[1] === 'violations') {
+            clearViolations(parts[2]);
+          } else {
+            writeAdminOutput('[!] Usage: /clear violations USERNAME');
+          }
+          break;
+        default: writeAdminOutput('[!] Unknown command. Type /help for guide.');
+      }
+    } catch (err) {
+      writeAdminOutput(`[!] Error: ${err.message}`);
+    }
+  };
+
+  adminCommandInput.addEventListener('input', (e) => {
+    showSuggestions(e.target.value);
+  });
+
+  adminCommandInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const input = adminCommandInput.value;
+      const matches = commandSuggestions.filter(s => s.cmd.toLowerCase().startsWith(input.toLowerCase()));
+      if (matches.length > 0) {
+        adminCommandInput.value = matches[0].cmd;
+        if (suggestionsDropdown) suggestionsDropdown.remove();
+      }
+    } else if (e.key === 'Enter') {
+      executeAdminCommand();
+    }
+  });
+
+  submitAdminCommandBtn.onclick = executeAdminCommand;
+
+  closeAdminPanelBtn.onclick = () => {
+    adminPanelContainer.style.display = 'none';
+    if (suggestionsDropdown) suggestionsDropdown.remove();
+    adminInputArea.classList.remove('hidden');
+  };
+}
+
+function banUser(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (inMemoryStorage.protectedpeople.has(actual)) { writeAdminOutput(`[!] Cannot ban protected user '${actual}'.`); return; }
+  inMemoryStorage.banned.add(actual);
+  writeAdminOutput(`[✓] User '${actual}' has been banned.`);
+}
+
+function unbanUser(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (!inMemoryStorage.banned.has(actual)) { writeAdminOutput(`[!] User '${username}' is not banned.`); return; }
+  inMemoryStorage.banned.delete(actual);
+  writeAdminOutput(`[✓] User '${actual}' has been unbanned.`);
+}
+
+async function changeUsername(oldUsername, newUsername) {
+  if (!oldUsername || !newUsername) { writeAdminOutput('[!] Both usernames required.'); return; }
+  const actual = userLookup.find(oldUsername);
+  if (!actual) { writeAdminOutput(`[!] User '${oldUsername}' does not exist.`); return; }
+  if (userLookup.find(newUsername)) { writeAdminOutput(`[!] Username '${newUsername}' already exists.`); return; }
+  
+  const isAdmin = inMemoryStorage.admins.has(actual);
+  const isUser = inMemoryStorage.users.has(actual);
+  
+  if (isAdmin) {
+    inMemoryStorage.admins.delete(actual);
+    inMemoryStorage.admins.add(newUsername);
+    const adminPass = inMemoryStorage.adminsPasswords.get(actual);
+    if (adminPass) {
+      inMemoryStorage.adminsPasswords.delete(actual);
+      inMemoryStorage.adminsPasswords.set(newUsername, adminPass);
+    }
+  } else {
+    inMemoryStorage.users.delete(actual);
+    inMemoryStorage.users.add(newUsername);
+  }
+  
+  const userPass = inMemoryStorage.userspassword.get(actual);
+  if (userPass) {
+    inMemoryStorage.userspassword.delete(actual);
+    inMemoryStorage.userspassword.set(newUsername, userPass);
+  }
+  
+  if (inMemoryStorage.banned.has(actual)) {
+    inMemoryStorage.banned.delete(actual);
+    inMemoryStorage.banned.add(newUsername);
+  }
+  
+  userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+  writeAdminOutput(`[✓] Username changed from '${actual}' to '${newUsername}'.`);
+}
+
+function changePassword(username, newPassword) {
+  if (!username || !newPassword) { writeAdminOutput('[!] Both username and password required.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  inMemoryStorage.userspassword.set(actual, newPassword);
+  writeAdminOutput(`[✓] Password for '${actual}' has been changed.`);
+}
+
+function listUsers() {
+  let msg='═══════════════════════════════════════════\n';
+  msg+='           USERS LIST\n';
+  msg+='═══════════════════════════════════════════\n\n';
+  msg+='👑 ADMINS:\n';
+  for (let a of inMemoryStorage.admins) {
+    const password = inMemoryStorage.userspassword.has(a) ? inMemoryStorage.userspassword.get(a) : 'No password';
+    const banned = inMemoryStorage.banned.has(a) ? ' [BANNED]' : '';
+    const protectedStatus = inMemoryStorage.protectedpeople.has(a) ? ' [PROTECTED]' : '';
+    msg+=`  • ${a}\n    Pass: ${password}${banned}${protectedStatus}\n`;
+  }
+  msg+='\n👥 USERS:\n';
+  for (let u of inMemoryStorage.users) {
+    if(!inMemoryStorage.admins.has(u)) {
+      const password = inMemoryStorage.userspassword.has(u) ? inMemoryStorage.userspassword.get(u) : 'No password';
+      const banned = inMemoryStorage.banned.has(u) ? ' [BANNED]' : '';
+      const protectedStatus = inMemoryStorage.protectedpeople.has(u) ? ' [PROTECTED]' : '';
+      msg+=`  • ${u}\n    Pass: ${password}${banned}${protectedStatus}\n`;
+    }
+  }
+  msg+='\n🚫 BANNED:\n';
+  if (inMemoryStorage.banned.size === 0) {
+    msg+='  None\n';
+  } else {
+    for (let b of inMemoryStorage.banned) {
+      msg+=`  • ${b}\n`;
+    }
+  }
+  msg+='\n🔒 PROTECTED:\n';
+  if (inMemoryStorage.protectedpeople.size === 0) {
+    msg+='  None\n';
+  } else {
+    for (let p of inMemoryStorage.protectedpeople) {
+      msg+=`  • ${p}\n`;
+    }
+  }
+  msg+='\n⚠️  ALERT SETTINGS:\n';
+  for (let u of inMemoryStorage.users) {
+    const customAlert = inMemoryStorage.userAlerts.get(u);
+    const isNoAlert = inMemoryStorage.noAlertUsers.has(u);
+    
+    if (isNoAlert) {
+      msg+=`  • ${u}: [DISABLED]\n`;
+    } else if (customAlert) {
+      msg+=`  • ${u}: "${customAlert.message}" (${customAlert.strikes} strikes)\n`;
+    } else {
+      msg+=`  • ${u}: [DEFAULT]\n`;
+    }
+  }
+  msg+='═══════════════════════════════════════════\n';
+  writeAdminOutput(msg);
+}
+
+function showSystemStatus() {
+  const userCount = inMemoryStorage.users.size;
+  const adminCount = inMemoryStorage.admins.size;
+  const bannedCount = inMemoryStorage.banned.size;
+  const protectedCount = inMemoryStorage.protectedpeople.size;
+  let statusMsg = '═══════════════════════════════════════════\n';
+  statusMsg += '         SYSTEM STATUS\n';
+  statusMsg += '═══════════════════════════════════════════\n\n';
+  statusMsg += `Database: ${firebaseEnabled ? '🟢 Connected' : '🟡 Offline (Memory)'}\n`;
+  statusMsg += `Total Users: ${userCount}\n`;
+  statusMsg += `Total Admins: ${adminCount}\n`;
+  statusMsg += `Banned Users: ${bannedCount}\n`;
+  statusMsg += `Protected Users: ${protectedCount}\n`;
+  statusMsg += '═══════════════════════════════════════════\n';
+  writeAdminOutput(statusMsg);
+}
+
+function showPassword(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  const pass = inMemoryStorage.userspassword.get(actual);
+  writeAdminOutput(pass ? `🔐 Password for ${actual}:\n${pass}` : `[!] No password set for ${actual}.`);
+}
+
+async function addUser(username, password) {
+  if (!username || !password) { writeAdminOutput('[!] Specify username and password.'); return; }
+  if (userLookup.find(username)) { writeAdminOutput(`[!] User '${username}' already exists.`); return; }
+  inMemoryStorage.users.add(username);
+  inMemoryStorage.userspassword.set(username, password);
+  userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+  writeAdminOutput(`[✓] New user '${username}' added successfully!`);
+}
+
+async function addAdmin(username, password) {
+  if (!username || !password) { writeAdminOutput('[!] Specify username and password.'); return; }
+  if (userLookup.find(username)) { writeAdminOutput(`[!] Admin '${username}' already exists.`); return; }
+  inMemoryStorage.admins.add(username);
+  inMemoryStorage.adminsPasswords.set(username, password);
+  userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+  writeAdminOutput(`[✓] New admin '${username}' added successfully!`);
+}
+
+async function removeUser(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  inMemoryStorage.users.delete(actual);
+  inMemoryStorage.userspassword.delete(actual);
+  inMemoryStorage.banned.delete(actual);
+  userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+  writeAdminOutput(`[✓] User '${actual}' removed successfully!`);
+}
+
+async function removeAdmin(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] Admin '${username}' does not exist.`); return; }
+  inMemoryStorage.admins.delete(actual);
+  inMemoryStorage.adminsPasswords.delete(actual);
+  inMemoryStorage.banned.delete(actual);
+  userLookup.init(inMemoryStorage.admins, inMemoryStorage.users);
+  writeAdminOutput(`[✓] Admin '${actual}' removed successfully!`);
+}
+
+function protectUser(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (inMemoryStorage.protectedpeople.has(actual)) { writeAdminOutput(`[!] User '${actual}' is already protected.`); return; }
+  if (currentUsername.toLowerCase() !== 'yassinyassinfree') { writeAdminOutput(`[!] Only the owner can protect users.`); return; }
+  inMemoryStorage.protectedpeople.add(actual);
+  writeAdminOutput(`[✓] User '${actual}' has been added to protected list.`);
+}
+
+function unprotectUser(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (!inMemoryStorage.protectedpeople.has(actual)) { writeAdminOutput(`[!] User '${actual}' is not protected.`); return; }
+  if (currentUsername.toLowerCase() !== 'yassinyassinfree') { writeAdminOutput(`[!] Only the owner can unprotect users.`); return; }
+  inMemoryStorage.protectedpeople.delete(actual);
+  writeAdminOutput(`[✓] User '${actual}' has been removed from protected list.`);
+}
+
+async function showUserHistory(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const isAdmin = inMemoryStorage.admins.has(currentUsername);
+  if (!isAdmin) { writeAdminOutput('[!] Access denied. Only admins can view history.'); return; }
+  
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  
+  if (firebaseEnabled && db) {
+    try {
+      const doc = await db.collection('user_activity').doc(actual).get();
+      if (doc.exists) {
+        const data = doc.data();
+        const modules = data.modules || [];
+        if (modules.length === 0) {
+          writeAdminOutput(`[!] No activity history found for user '${actual}'.`);
+        } else {
+          let historyMsg = `📜 Activity history for '${actual}':\n\n`;
+          modules.forEach((activity, idx) => {
+            historyMsg += `${idx + 1}. [${activity.timestamp}] → ${activity.module}\n`;
+          });
+          writeAdminOutput(historyMsg);
+        }
+      } else {
+        writeAdminOutput(`[!] No activity history found for user '${actual}'.`);
+      }
+    } catch (error) {
+      writeAdminOutput(`[!] Error fetching history: ${error.message}`);
+    }
+  } else {
+    const key = 'user_activity_' + actual;
+    const activities = JSON.parse(localStorage.getItem(key) || '[]');
+    if (activities.length === 0) {
+      writeAdminOutput(`[!] No activity history found for user '${actual}'.`);
+    } else {
+      let historyMsg = `📜 Activity history for '${actual}':\n\n`;
+      activities.forEach((activity, idx) => {
+        historyMsg += `${idx + 1}. [${activity.timestamp}] → ${activity.module}\n`;
+      });
+      writeAdminOutput(historyMsg);
+    }
+  }
+}
+
+function removeAlert(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  
+  inMemoryStorage.userAlerts.delete(actual);
+  inMemoryStorage.noAlertUsers.add(actual);
+  localStorage.setItem('noAlertUsers', JSON.stringify([...inMemoryStorage.noAlertUsers]));
+  writeAdminOutput(`[✓] Alerts permanently removed for user '${actual}'.`);
+}
+
+function addAlert(username, messageParts) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  
+  inMemoryStorage.noAlertUsers.delete(actual);
+  localStorage.setItem('noAlertUsers', JSON.stringify([...inMemoryStorage.noAlertUsers]));
+  
+  if (!messageParts || messageParts.trim() === '') {
+    inMemoryStorage.userAlerts.delete(actual);
+    writeAdminOutput(`[✓] Default alert enabled for user '${actual}'.`);
+    return;
+  }
+  
+  const matchBrackets = messageParts.match(/\[(.*?)\]\s*\{(\d+)\}/);
+  
+  if (matchBrackets) {
+    const message = matchBrackets[1].trim();
+    const strikes = parseInt(matchBrackets[2]);
+    
+    inMemoryStorage.userAlerts.set(actual, {
+      message: message,
+      strikes: strikes,
+      permanent: false
+    });
+    
+    writeAdminOutput(`[✓] Custom alert set for user '${actual}':\n   Message: "${message}"\n   Strikes: ${strikes}`);
+  } else {
+    inMemoryStorage.userAlerts.set(actual, {
+      message: messageParts.trim(),
+      strikes: 0,
+      permanent: false
+    });
+    
+    writeAdminOutput(`[✓] Custom alert set for user '${actual}':\n   Message: "${messageParts.trim()}"`);
+  }
+}
+
+function addException(username, days) {
+  if (!username || !days || days <= 0) { writeAdminOutput('[!] Specify username and valid days.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + days);
+  inMemoryStorage.exceptions.set(actual, { days: days, expiry: expiry.toISOString() });
+  writeAdminOutput(`[✓] Exception added for user '${actual}' for ${days} days (expires: ${expiry.toLocaleString()}).`);
+}
+
+function removeException(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (!inMemoryStorage.exceptions.has(actual)) { writeAdminOutput(`[!] User '${actual}' has no active exception.`); return; }
+  inMemoryStorage.exceptions.delete(actual);
+  writeAdminOutput(`[✓] Exception removed for user '${actual}'.`);
+}
+
+function showViolations(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  const userViolations = inMemoryStorage.violations.get(actual) || [];
+  if (userViolations.length === 0) { writeAdminOutput(`[!] No violations found for user '${actual}'.`); return; }
+  let msg = `⚖️ Violations for '${actual}':\n\n`;
+  userViolations.forEach((violation, idx) => {
+    msg += `${idx + 1}. ${violation.reason} - ${new Date(violation.timestamp).toLocaleString()}\n`;
+  });
+  writeAdminOutput(msg);
+}
+
+function listViolations() {
+  let msg = '═══════════════════════════════════════════\n';
+  msg += '          VIOLATIONS LIST\n';
+  msg += '═══════════════════════════════════════════\n\n';
+  let hasViolations = false;
+  for (let [username, violations] of inMemoryStorage.violations) {
+    if (violations.length > 0) {
+      hasViolations = true;
+      msg += `${username}: ${violations.length} violation(s)\n`;
+      violations.forEach((violation, idx) => {
+        msg += `  ${idx + 1}. ${violation.reason} - ${new Date(violation.timestamp).toLocaleString()}\n`;
+      });
+      msg += '\n';
+    }
+  }
+  if (!hasViolations) { msg += '[!] No violations found.'; }
+  msg += '═══════════════════════════════════════════\n';
+  writeAdminOutput(msg);
+}
+
+function clearViolations(username) {
+  if (!username) { writeAdminOutput('[!] Specify username.'); return; }
+  const actual = userLookup.find(username);
+  if (!actual) { writeAdminOutput(`[!] User '${username}' does not exist.`); return; }
+  if (!inMemoryStorage.violations.has(actual)) { writeAdminOutput(`[!] No violations found for user '${actual}'.`); return; }
+  inMemoryStorage.violations.delete(actual);
+  writeAdminOutput(`[✓] Violations cleared for user '${actual}'.`);
+}
+
+setInterval(() => {
+  const title = document.querySelector('.terminal-title');
+  if (title && Math.random() > 0.95) {
+    title.style.textShadow = '2px 0 #ff6b6b, -2px 0 #4ecdc4, 0 0 25px #00ff41';
+    setTimeout(() => { title.style.textShadow = '0 0 15px #00ff41'; }, 150);
+  }
+}, 2500);
+
+document.querySelectorAll('button').forEach(button => {
+  button.addEventListener('click', function(e) {
+    if (this.id === 'closeAdminPanel' || this.id === 'submitAdminCommand' || this.classList.contains('admin-panel-close-btn')) return;
+    if (inMemoryStorage.noAlertUsers.has(currentUsername)) return;
+    if (isUserLoggedIn) {
+      const userAlert = inMemoryStorage.userAlerts.get(currentUsername);
+      
+      if (userAlert) {
+        const strikeText = userAlert.strikes > 0 ? ` (${userAlert.strikes} strikes)` : '';
+        alert(userAlert.message + strikeText);
+      } else {
+        alert("Please go to any admin on this website which are yassin moh mounir and yassin sherrif and hassan and ahmed salah finally farouk. They will help you request username and password changes. Passwords change automatically, but usernames must be changed in code.");
+      }
+    }
+  });
+});
+
+// Session expiry warning (show warning 1 hour before expiry)
+setInterval(() => {
+  if (isUserLoggedIn) {
+    const expiryTime = localStorage.getItem('sessionExpiryTime');
+    const currentTime = new Date().getTime();
+    const timeUntilExpiry = parseInt(expiryTime) - currentTime;
+    const oneHourMs = 60 * 60 * 1000;
+    
+    // Warn if less than 1 hour remaining
+    if (timeUntilExpiry < oneHourMs && timeUntilExpiry > 0) {
+      const minutesRemaining = Math.floor(timeUntilExpiry / (60 * 1000));
+      console.warn(`⚠️ Session expires in ${minutesRemaining} minutes`);
+    }
+    
+    // Auto logout if session expired
+    if (timeUntilExpiry <= 0) {
+      localStorage.removeItem('currentUsername');
+      localStorage.removeItem('sessionStartTime');
+      localStorage.removeItem('sessionExpiryTime');
+      localStorage.removeItem('loginActive');
+      alert('Your 24-hour session has expired. Please login again.');
+      location.reload();
+    }
+  }
+}, 60000); // Check every minute
+</script>
+
+</body>
+</html>

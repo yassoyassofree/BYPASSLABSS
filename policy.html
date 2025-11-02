@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Website Policy - BYPASS LABS</title>
+    <style scr="button.css"></style>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+            text-shadow: 0 0 10px #00ff00;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #00ff00;
+        }
+        h2 {
+            font-size: 1.8em;
+            margin-top: 30px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        li:before {
+            content: ">";
+            position: absolute;
+            left: 0;
+            color: #00ff00;
+        }
+        .highlight {
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+        }
+        .warning {
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+        }
+        .ai-section {
+            background-color: #001100;
+            padding: 15px;
+            border: 1px solid #00ff00;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="exit-button-container">
+        <button class="exit-btn" onclick="exitToHome()" title="Return to Home (ESC key)">
+            <i class="fas fa-home"></i> HOME
+        </button>
+    </div>
+        <h1>Website Policy - BYPASS LABS</h1>
+        <p>Welcome to BYPASS LABS. This policy outlines the rules you must follow to remain a member of our community. Violation of these rules may result in bans, removals, or permanent exclusion.</p>
+
+        <h2>General Rules</h2>
+        <ul>
+            <li>Never tell a teacher about this website.</li>
+            <li>If anyone, including admins, tells someone about the website and provides the link, username, or password, they will be removed permanently without warning.</li>
+            <li>If anyone complains to a teacher about me or anyone on this website, they will be banned for 10 days.</li>
+            <li>Scamming in the game is allowed. Do not tell me that is scamming me and then not scam me.</li>
+            <li>You can do anything, but you must ask for agreement from an admin or the owner.</li>
+            <li>Any admin you see must contact the owner or check the policy to see if something is banned.</li>
+            <li>The game is meant for fun. If anyone steals another's account, admins will ban them for a whole month without asking.</li>
+            <li>Copying piercing data or using it without stating it is from BYPASS LABS website will result in automatic ban, and it is recorded on the website.</li>
+        </ul>
+
+        <h2>Bans and Penalties</h2>
+        <ul>
+            <li>Games can be shared, but sharing any game on the website "unblock us" or others may result in ban.</li>
+            <li>Sharing information about the website to other people is not allowed and will result in a ban for seven weeks. No forgiveness.</li>
+            <li>Any ad that unblocks anyone or bans anyone from this website will result in removal from admin status.</li>
+            <li>Earning decisions will be discussed through the admin group.</li>
+            <li>Change your password so that no admin can steal your account.</li>
+        </ul>
+
+        <h2>Admin Responsibilities</h2>
+        <ul>
+            <li>Admins must contact the owner or check the policy before taking action on bans.</li>
+            <li>Admins are responsible for enforcing rules without bias.</li>
+        </ul>
+
+        <h2>Reporting Issues</h2>
+        <ul>
+            <li>Any problems, errors, or issues that happen, come and tell me immediately.</li>
+        </ul>
+
+        <div class="ai-section">
+            <h2>AI Enforcement</h2>
+            <p>To ensure compliance with this policy, we have implemented an advanced AI system that monitors user activities. This AI actively detects and reports:</p>
+            <ul>
+                <li>Users disobeying the rules, such as sharing website information or complaining to teachers.</li>
+                <li>Account stealing attempts or unauthorized access.</li>
+                <li>Scamming violations or other prohibited actions.</li>
+            </ul>
+            <p class="warning">The AI operates 24/7 and automatically flags violations for admin review. Non-compliance may lead to immediate bans.</p>
+        </div>
+
+        <p class="highlight">Remember: This website is for fun and unblocking games. Follow these rules to keep the community safe and enjoyable. Violations are taken seriously.</p>
+    </div>
+    <script src="policySystem.js"></script>
+    <script src="authGuard.js"></script>
+</body>
+    <script>
+        function exitToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // ESC key to exit
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                exitToHome();
+            }
+        });
+    </script>
+</html>
